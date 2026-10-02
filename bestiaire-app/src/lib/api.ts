@@ -5,7 +5,20 @@ export interface GameState {
   pseudo: string | null; tz: string; plumes: number; films: number; next_film_at: string | null; film_cap: number; film_minutes: number;
   premium: boolean; premium_until: string | null; rating: number; wins: number; losses: number; duel_w: number; duel_l: number;
   quests: Quest[]; wishes: string[]; phase: string; month: number; daily_biome: string; server_time: string;
+  onboarded: boolean; achievements: string[]; is_admin?: boolean; muted_until?: string | null; notif?: NotifPrefs | null;
 }
+export type NotifKind = 'pellicules' | 'encheres' | 'amis' | 'guilde' | 'duels';
+export type NotifPrefs = Record<NotifKind, boolean>;
+export interface Notif { id: number; kind: NotifKind; title: string; body: string; tab: string | null; created_at: string; read_at: string | null }
+export type ReportReason = 'insulte' | 'harcelement' | 'haine' | 'sexuel' | 'spam' | 'autre';
+export interface AdminReport { kind: 'message' | 'pseudo' | 'guilde'; ref: string; excerpt: string; target_user: string | null; target: string | null; n: number; reasons: ReportReason[]; last: string; muted_until: string | null }
+export interface Achievement { code: string; goal: number; prog: number; plumes: number; films: number; claimed: boolean }
+export interface Friend { id: string; pseudo: string; status: 'pending' | 'accepted'; incoming: boolean; species: number; rating: number; last_seen: string | null; guild: string | null; defense: boolean }
+export interface FriendProfile { id: string; pseudo: string | null; rating: number; wins: number; duel_w: number; achievements: number; metrics: Record<string, number>; top: { species_id: string; q: number; lvl: number; phase: string | null; tier: number }[] }
+export interface GuildSummary { id: number; name: string; tag: string; descr: string; emblem: string | null; open: boolean; n: number; rating: number | null }
+export interface GuildMember { id: string; pseudo: string; role: 'chef' | 'officier' | 'membre'; rating: number; species: number; week: number; last_seen: string | null }
+export interface GuildMessage { id: number; user_id: string | null; pseudo: string | null; body: string; at: string }
+export interface Guild { id: number; name: string; tag: string; descr: string; emblem: string | null; open: boolean; role: GuildMember['role']; claimed: boolean | null; week: { photos: number; goal: number; members: number }; members: GuildMember[]; messages: GuildMessage[] }
 export interface Card { id: number; species_id: string; q: number; lvl: number; biome: string | null; phase: string | null; status: 'owned' | 'auction'; created_at?: string }
 export interface Shot { id: number; species_id: string; q: number; lvl: number; biome: string; phase: string; is_new: boolean }
 export interface FuseResult { id: number; species_id: string; q: number; lvl: number; up: boolean; a: { q: number; lvl: number }; b: { q: number; lvl: number } }
@@ -35,6 +48,37 @@ export const api = {
   claimQuest: (i: number) => rpc<{ plumes?: number; films?: number }>('claim_quest', { p_index: i }),
   battleReward: (won: boolean, foes: string[], lvls: number[]) => rpc<{ gain: number; bonus: boolean; cap?: boolean }>('battle_reward', { p_won: won, p_foes: foes, p_lvls: lvls }),
   saveDefense: (cards: number[]) => rpc<void>('save_defense', { p_cards: cards }),
+  achievements: () => rpc<Achievement[]>('get_achievements'),
+  claimAchievement: (code: string) => rpc<{ plumes: number; films: number }>('claim_achievement', { p_code: code }),
+  friends: () => rpc<{ code: string; list: Friend[] }>('get_friends'),
+  friendRequest: (code: string) => rpc<string>('friend_request', { p_code: code }),
+  friendRespond: (other: string, accept: boolean) => rpc<void>('friend_respond', { p_other: other, p_accept: accept }),
+  friendRemove: (other: string) => rpc<void>('friend_remove', { p_other: other }),
+  friendProfile: (other: string) => rpc<FriendProfile>('friend_profile', { p_other: other }),
+  guildList: (q = '') => rpc<GuildSummary[]>('guild_list', { p_q: q }),
+  guildCreate: (name: string, tag: string, descr: string, emblem: string | null) => rpc<number>('guild_create', { p_name: name, p_tag: tag, p_descr: descr, p_emblem: emblem }),
+  guildJoin: (id: number) => rpc<void>('guild_join', { p_gid: id }),
+  guildLeave: () => rpc<void>('guild_leave'),
+  guildManage: (user: string, action: 'exclure' | 'promouvoir' | 'retrograder' | 'chef') => rpc<void>('guild_manage', { p_user: user, p_action: action }),
+  guildUpdate: (descr: string, open: boolean) => rpc<void>('guild_update', { p_descr: descr, p_open: open }),
+  guildPost: (body: string) => rpc<void>('guild_post', { p_body: body }),
+  guildClaim: () => rpc<{ plumes: number; films: number }>('guild_claim_week'),
+  guildGet: () => rpc<Guild | null>('guild_get'),
+  deleteAccount: () => rpc<void>('delete_my_account'),
+  notifications: () => rpc<{ unread: number; list: Notif[]; prefs: NotifPrefs | null; push: number }>('get_notifications'),
+  markRead: () => rpc<void>('mark_notifications_read'),
+  setNotifPrefs: (prefs: Partial<NotifPrefs>) => rpc<void>('set_notif_prefs', { p_prefs: prefs }),
+  pushSubscribe: (endpoint: string, p256dh: string, auth: string) => rpc<void>('push_subscribe', { p_endpoint: endpoint, p_p256dh: p256dh, p_auth: auth }),
+  pushUnsubscribe: (endpoint: string) => rpc<void>('push_unsubscribe', { p_endpoint: endpoint }),
+  report: (kind: 'message' | 'pseudo' | 'guilde', ref: string, reason: ReportReason) => rpc<string>('report', { p_kind: kind, p_ref: ref, p_reason: reason }),
+  block: (other: string, on: boolean) => rpc<void>('block_user', { p_other: other, p_on: on }),
+  myBlocks: () => rpc<{ id: string; pseudo: string }[]>('my_blocks'),
+  adminReports: () => rpc<AdminReport[]>('admin_reports'),
+  adminAct: (kind: string, ref: string, action: 'ignorer' | 'masquer' | 'pseudo' | 'guilde' | 'muet' | 'bannir') => rpc<void>('admin_act', { p_kind: kind, p_ref: ref, p_action: action }),
+  async defenseOf(owner: string): Promise<Defense | null> {
+    const { data, error } = await supabase.from('defenses').select('*').eq('owner', owner).maybeSingle();
+    if (error) throw error; return data as Defense | null;
+  },
   recordDuel: (defender: string, won: boolean) => rpc<{ delta: number; gain: number; rating: number }>('record_duel', { p_defender: defender, p_won: won }),
 
   async cards(): Promise<Card[]> {
@@ -57,7 +101,7 @@ export const api = {
     const { data, error } = await supabase.from('defenses').select('*').order('rating', { ascending: false }).limit(200);
     if (error) throw error; return data as Defense[];
   },
-  async setProfile(uid: string, patch: { pseudo?: string; wishes?: string[]; tz?: string }) {
+  async setProfile(uid: string, patch: { pseudo?: string; wishes?: string[]; tz?: string; onboarded?: boolean }) {
     const { error } = await supabase.from('profiles').update(patch).eq('id', uid);
     if (error) throw error;
   },

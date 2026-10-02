@@ -6,6 +6,9 @@ import { buzz } from '../lib/fx';
 import { Print } from '../components/ui';
 import { Reveal } from '../components/Reveal';
 import { Fiche } from './Fiche';
+import { InstallBanner, InstallHelp } from '../components/Install';
+import { NotifPrompt } from '../components/Notifications';
+import { Sheet } from '../components/ui';
 
 const actW = (a: string, ph: string) => a === 'D' ? (ph === 'jour' ? 1 : ph === 'nuit' ? .05 : .5) : a === 'N' ? (ph === 'nuit' ? 1 : ph === 'jour' ? .05 : .5) : (ph === 'jour' ? .3 : ph === 'nuit' ? .6 : 1);
 const QTXT: Record<string, (q: { b?: string; c?: string; goal: number }) => string> = {
@@ -22,6 +25,7 @@ export function Safari() {
   const [reveal, setReveal] = useState<Shot[] | null>(null);
   const [last, setLast] = useState<Shot[] | null>(null);
   const [fiche, setFiche] = useState<string | null>(null);
+  const [inst, setInst] = useState(false);
   const ph = state?.phase || 'jour', m = state?.month || new Date().getMonth() + 1;
   const counts = useMemo(() => Object.fromEntries(BIOMES.map(b => {
     const av = FRANCE.filter(s => s.biomes.includes(b) && (!s.months || s.months.includes(m)) && actW(s.act, ph) >= .3);
@@ -39,6 +43,9 @@ export function Safari() {
   const claim = async (i: number) => { const r = await run(api.claimQuest(i)); if (r) { buzz(25); toast('Récompense récupérée !'); refresh() } };
   return (
     <section className="view">
+      <InstallBanner onOpen={() => setInst(true)} />
+      {state.onboarded && <NotifPrompt />}
+      {inst && <Sheet onClose={() => setInst(false)} label="Installer Bestiaire"><h2>Installer Bestiaire</h2><InstallHelp /><button className="btn" onClick={() => setInst(false)}>Fermer</button></Sheet>}
       <div className="cond"><div><span>Pays</span><b>France</b></div><div><span>Moment</span><b>{ph[0].toUpperCase() + ph.slice(1)}</b></div><div><span>Saison</span><b>{MOIS[m - 1]}</b></div></div>
       <div className="events">
         <div className="evt" style={{ ['--bc' as string]: BIOME[state.daily_biome as Biome].c }}><b>Biome du jour : {BIOME[state.daily_biome as Biome].n}</b><span>Chances d'espèces rares doublées aujourd'hui.</span></div>

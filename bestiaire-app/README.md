@@ -16,9 +16,13 @@ Toute la logique qui compte (tirages, fusions, plumes, enchères, abonnement) s'
 1. Supabase → **Database → Extensions** : active **pg_cron** (clôture automatique des enchères chaque minute).
 2. Supabase → **SQL Editor → New query** : colle tout le contenu de `supabase/migrations/20261002000001_schema.sql` → **Run**.
 3. Nouvelle requête : colle `supabase/seed.sql` (les 1 135 espèces) → **Run**.
-4. Vérification rapide : `select count(*) from species;` doit renvoyer **1135**, et `select * from cron.job;` doit montrer `bestiaire-settle-auctions`.
+4. Nouvelle requête : colle `supabase/migrations/20261002000002_social.sql` (succès, amis, guildes, suppression de compte) → **Run**.
+5. Nouvelle requête : colle `supabase/migrations/20261002000003_notif_moderation.sql` (notifications, modération) → **Run**.
+   Ces fichiers s'exécutent **toujours dans l'ordre 1 → 2 → 3**. Si tu en relances un, relance aussi les suivants.
+6. Vérification rapide : `select count(*) from species;` doit renvoyer **1135**, et `select * from cron.job;` doit montrer `bestiaire-settle-auctions`.
 
-> Les deux fichiers peuvent être relancés sans risque (mise à jour sans perte de données).
+> **Mise à jour d'une base existante** : relance `…001_schema.sql`, puis `…002_social.sql`, puis `…003_notif_moderation.sql`, sans toucher au seed.
+> Les fichiers peuvent être relancés sans risque (mise à jour sans perte de données).
 > `supabase/tests/00_fake_supabase.sql` sert uniquement aux tests locaux : **ne pas l'exécuter sur Supabase**.
 
 ### 3. Connexion des joueurs
@@ -101,13 +105,52 @@ Les chances de rareté sont **identiques** pour tout le monde (affichées dans l
 
 ---
 
+## Notifications sur le téléphone (≈ 10 min)
+Sans cette étape, les notifications restent visibles dans la cloche du jeu ; avec, elles arrivent aussi sur l'écran du téléphone, jeu fermé.
+1. **Clés de notification** (dans le terminal VS Code) : `npx web-push generate-vapid-keys`. Tu obtiens une clé publique et une clé privée.
+2. **Secret pour le planificateur** : `node -e "console.log(crypto.randomUUID())"` (copie le résultat).
+3. **Enregistrer et déployer** :
+   ```powershell
+   npx supabase login                                   # une seule fois
+   npx supabase link --project-ref wrigianbbtzlpqbpkbps  # une seule fois
+   npx supabase secrets set VAPID_PUBLIC_KEY=la_cle_publique VAPID_PRIVATE_KEY=la_cle_privee CRON_SECRET=le_secret
+   npx supabase functions deploy send-push --no-verify-jwt
+   ```
+4. Supabase → **Database → Extensions** : active **pg_net**.
+5. Supabase → **SQL Editor**, remplace `TON_ID` et `LE_SECRET` puis **Run** :
+   ```sql
+   select cron.schedule('bestiaire-push', '* * * * *', $$
+     select net.http_post(url := 'https://TON_ID.supabase.co/functions/v1/send-push',
+                          headers := '{"x-cron-secret": "LE_SECRET"}'::jsonb) $$);
+   ```
+   (ici `TON_ID` = `wrigianbbtzlpqbpkbps`)
+   ```sql
+   -- pour vérifier : la liste des tâches planifiées
+   select jobname, schedule from cron.job;
+   ```
+6. Relance `…003_notif_moderation.sql` si pg_cron a été activé après (pour « pellicules rechargées »).
+L'appli lit la clé publique sur le serveur : rien à ajouter sur GitHub. Sur iPhone, les notifications ne marchent qu'une fois l'appli installée sur l'écran d'accueil (iOS 16.4 ou plus).
+
+## Modération
+- **Automatique** : insultes et propos haineux refusés dans les pseudos, noms de guilde et messages ; un message signalé par 3 joueurs est masqué.
+- **Joueurs** : « Signaler » (message, pseudo, guilde) et « Bloquer » (plus de messages ni de demande d'ami de sa part).
+- **Toi, administrateur** : active ton compte une fois dans le SQL Editor :
+  ```sql
+  update profiles set is_admin = true where id = (select id from auth.users where email = 'TON_EMAIL_DE_JEU');
+  ```
+  Un panneau « Modération » apparaît alors dans ton profil : masquer, effacer un pseudo, renommer une guilde, rendre muet 7 jours, bannir.
+
+## Pages légales : à compléter avant d'inviter des joueurs
+Les textes sont dans `src/screens/Legal.tsx`. En haut du fichier, l'objet `LEGAL` contient les champs que le jeu ne peut pas deviner (statut, adresse, e-mail de contact, région Supabase, médiateur de la consommation) ; ils s'affichent surlignés tant qu'ils ne sont pas remplis.
+Ces textes sont un point de départ sérieux, pas un avis juridique : fais-les relire avant de lancer l'abonnement payant.
+
 ## Tests automatiques
 
 | Commande | Ce qui est vérifié |
 |---|---|
-| `npm test` | 21 tests : données des 1 135 espèces, cote identique à la base, saisons, moteur de combat (300 combats simulés, toujours terminés), règles d'abonnement Stripe |
-| `npm run test:db` | 67 tests sur une vraie base PostgreSQL : sécurité (RLS, anti-triche), safari, pellicules, premium, répartition des raretés sur 2 000 photos, fusions, enchères, collectionneurs, défis, combats, duels |
-| `npm run test:e2e` | 28 étapes dans un vrai navigateur mobile, 2 joueurs : connexion, safari, fusion, enchère gagnée par l'autre joueur, combats, duel, défis, abonnement, tentative de triche |
+| `npm test` | 27 tests (dont le chiffrement des notifications, vérifié avec la bibliothèque de référence) : données des 1 135 espèces, cote identique à la base, saisons, moteur de combat (300 combats simulés, toujours terminés), règles d'abonnement Stripe |
+| `npm run test:db` | 150 tests sur une vraie base PostgreSQL : sécurité (RLS, anti-triche), safari, pellicules, premium, répartition des raretés sur 2 000 photos, fusions, enchères, collectionneurs, défis, combats, duels, succès, amis, guildes, notifications, modération, suppression de compte |
+| `npm run test:e2e` | 65 étapes dans un vrai navigateur mobile, 2 joueurs : connexion, safari, fusion, enchère gagnée par l'autre joueur, combats, duel, défis, abonnement, tentative de triche |
 
 `test:db` et `test:e2e` demandent un PostgreSQL local et la passerelle de test (`tests/gateway.mjs`) : ils sont faits pour Linux/CI, pas besoin de les lancer sur ton PC.
 

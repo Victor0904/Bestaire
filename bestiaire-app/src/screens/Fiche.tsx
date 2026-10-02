@@ -5,12 +5,14 @@ import { api, Card, FuseResult } from '../lib/api';
 import { bestCard, useGame } from '../lib/store';
 import { Print, Sheet } from '../components/ui';
 import { FusionFX } from '../components/FusionFX';
+import { shareCard } from '../lib/share';
 
 export function Fiche({ id, onClose }: { id: string; onClose: () => void }) {
   const { bySpecies, refreshCards, refresh, run, toast, state, uid } = useGame();
   const s = BYID[id]; const c = bySpecies[id] || [];
   const [fx, setFx] = useState<FuseResult | null>(null);
   const [sell, setSell] = useState(false);
+  const [sharing, setSharing] = useState(false);
   if (fx) return <FusionFX s={s} r={fx} onClose={() => setFx(null)} />;
   if (sell && c.length) return <SellSheet id={id} onClose={() => setSell(false)} />;
   const best = c.length ? bestCard(c) : null; const lvl = best?.lvl || 1; const t = statsAt(s, lvl);
@@ -18,6 +20,10 @@ export function Fiche({ id, onClose }: { id: string; onClose: () => void }) {
   const counts = [0, 0, 0, 0]; c.forEach(x => counts[qIndex(x.q)]++);
   const wished = state?.wishes?.includes(id);
   const doFuse = async (l: number) => { const r = await run(api.fuse(id, l)); if (r) { setFx(r); refreshCards(); refresh() } };
+  const share = async () => {
+    if (!best) return; setSharing(true);
+    try { const r = await shareCard(s, best, state?.pseudo); if (r === 'downloaded') toast('Image enregistrée : envoie-la à tes amis !') } catch { toast("Impossible de créer l'image") } finally { setSharing(false) }
+  };
   const toggleWish = async () => { const w = new Set(state?.wishes || []); wished ? w.delete(id) : w.add(id); await run(api.setProfile(uid, { wishes: [...w] })); refresh(); toast(wished ? 'Espèce retirée de ta liste' : 'Tu seras prévenu au marché') };
   return (
     <Sheet onClose={onClose} label={s.nom}>
@@ -40,7 +46,7 @@ export function Fiche({ id, onClose }: { id: string; onClose: () => void }) {
         <p className="note">Deux exemplaires du même niveau donnent un niveau de plus. La meilleure photo est gardée ; si les deux ont la même qualité, 25 % de chances qu'elle s'améliore (jamais « parfaite »).</p></div>}
       {c.length > 0 && <div className="qlist">{QUAL.map((q, i) => counts[i] ? <span key={q}>{q} ×{counts[i]}</span> : null)}</div>}
       {s.credit && <p className="credit">Photo : {s.credit} · <a href={s.src || '#'} target="_blank" rel="noopener">voir sur iNaturalist</a></p>}
-      <div className="row">{c.length > 0 && <button className="btn ghost" onClick={() => setSell(true)}>Vendre</button>}<button className="btn ghost" onClick={toggleWish}>{wished ? 'Ne plus suivre' : 'Suivre au marché'}</button><button className="btn" onClick={onClose}>Fermer</button></div>
+      <div className="row">{c.length > 0 && <button className="btn primary" disabled={sharing} onClick={share}>{sharing ? 'Image…' : 'Partager'}</button>}{c.length > 0 && <button className="btn ghost" onClick={() => setSell(true)}>Vendre</button>}<button className="btn ghost" onClick={toggleWish}>{wished ? 'Ne plus suivre' : 'Suivre au marché'}</button><button className="btn" onClick={onClose}>Fermer</button></div>
     </Sheet>
   );
 }

@@ -111,3 +111,30 @@ describe('abonnement Stripe', () => {
     expect(customerId({ status: 'active', customer: { id: 'cus_2' } })).toBe('cus_2');
   });
 });
+
+describe('combat : effets et événements d’animation', () => {
+  const A = (arch: string) => FRANCE.find(s => s.arch === arch)!;
+  it('la protection protège sans donner d’esquive', () => {
+    const B = newBattle([{ s: A('a'), lvl: 1 }], [{ s: A('g'), lvl: 1 }], 'F', 'jour');
+    B.P[0].energy = 5;
+    const shield = abilities(A('a'), 1).find(a => a.effet === 'bouclier')!;
+    playTurn(B, shield, seeded(3));
+    expect(B.P[0].dodge).toBe(0);
+    expect(B.ev!.some(e => e.k === 'shield' && e.side === 'P')).toBe(true);
+  });
+  it('chaque tour produit des événements cohérents avec les PV', () => {
+    const rng = seeded(9);
+    for (let k = 0; k < 50; k++) {
+      const team = FRANCE.slice(k * 3, k * 3 + 3).map(s => ({ s, lvl: 2 }));
+      const B = newBattle(team, wildFoes(FRANCE, 3, 2, [], rng), 'P', 'nuit');
+      while (!B.over) {
+        const before = [...B.P, ...B.E].map(f => f.hp);
+        playTurn(B, ai(B.P[B.pi], rng), rng);
+        expect(B.ev!.length).toBeGreaterThan(0);
+        expect(B.ev!.some(e => e.k === 'act' || e.k === 'skip' || e.k === 'switch')).toBe(true);
+        for (const e of B.ev!) if (e.k === 'hit') { expect(e.amt).toBeGreaterThanOrEqual(0); expect(e.hp).toBeGreaterThanOrEqual(0) }
+        expect([...B.P, ...B.E].some((f, i) => f.hp !== before[i]) || B.ev!.some(e => e.k !== 'hit')).toBe(true);
+      }
+    }
+  });
+});

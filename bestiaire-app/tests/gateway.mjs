@@ -34,6 +34,7 @@ http.createServer(async (req, res) => {
     if (p === '/auth/v1/logout') return send(res, 204);
     if (p === '/auth/v1/otp') { calls.push({ otp: (await body(req)).email }); return send(res, 200, {}) }
     // ---- Fonctions serveur (Stripe simulé) ----
+    if (p === '/functions/v1/send-push' && req.method === 'GET') return send(res, 200, { publicKey: process.env.VAPID_PUBLIC_KEY || '' });   // clé publique de test
     if (p.startsWith('/functions/v1/')) { const id = sub(req); if (!id) return send(res, 401, { error: 'non connecté' }); calls.push({ fn: p.split('/').pop(), uid: id }); return send(res, 200, { url: 'about:blank#stripe-' + p.split('/').pop() }) }
     // ---- PostgREST ----
     if (p.startsWith('/rest/v1/rpc/')) {

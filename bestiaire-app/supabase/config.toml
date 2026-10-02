@@ -1,3 +1,6 @@
 # Configuration minimale pour la CLI Supabase (fonctions serveur)
 [functions.stripe-webhook]
 verify_jwt = false
+
+[functions.send-push]
+verify_jwt = false

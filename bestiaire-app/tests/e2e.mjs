@@ -8,8 +8,10 @@ const db = new pg.Pool();
 let pass = 0, fail = 0; const errors = [], http4xx = [];
 const ok = (c, m) => { if (c) { pass++; console.log('  ✓', m) } else { fail++; console.log('  ✗', m) } };
 const browser = await chromium.launch();
-async function player(email) {
-  const ctx = await browser.newContext({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 2, isMobile: true, hasTouch: true });
+async function player(email, skipTuto = true) {
+  const ctx = await browser.newContext({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 2, isMobile: true, hasTouch: true, permissions: ['notifications'] });
+  // Chrome sans écran répond toujours « refusé » : on simule un téléphone qui n'a pas encore été sollicité
+  await ctx.addInitScript(() => { try { Object.defineProperty(Notification, 'permission', { get: () => 'default' }) } catch { /* rien */ } });
   const p = await ctx.newPage();
   p.on('pageerror', e => errors.push(email + ' : ' + e.message));
   p.on('console', m => { if (m.type() === 'error' && !/fonts\.googleapis|ERR_|realtime|websocket|WebSocket|Failed to load resource/i.test(m.text())) errors.push(email + ' console : ' + m.text()) });
@@ -20,6 +22,7 @@ async function player(email) {
   await p.getByLabel('Adresse e-mail').fill(email); await p.getByLabel('Mot de passe').fill('motdepasse1');
   await p.getByRole('button', { name: /Se connecter/ }).click();
   await p.waitForSelector('header.top', { timeout: 10000 });
+  if (skipTuto) { await p.locator('.onb').waitFor({ timeout: 4000 }).catch(() => {}); if (await p.locator('.onb').count()) await p.getByRole('button', { name: 'Passer' }).click() }
   return p;
 }
 const uidOf = async (email) => (await db.query('select id from auth.users where email=$1', [email])).rows[0].id;
@@ -28,7 +31,15 @@ const tab = (p, name) => p.locator('nav.tabs').getByRole('button', { name }).cli
 await db.query('truncate public.cards, public.auctions, public.sales, public.bot_offers, public.defenses, public.duels, public.profiles cascade; delete from auth.users;');
 
 console.log('Connexion');
-const A = await player('victor@test.fr');
+const A = await player('victor@test.fr', false);
+console.log('Tutoriel de premier lancement');
+await A.locator('.onb').waitFor({ timeout: 5000 });
+ok(await A.getByRole('heading', { name: 'Bienvenue dans Bestiaire' }).isVisible(), 'tutoriel affiché au premier lancement');
+for (let i = 0; i < 5; i++) await A.getByRole('button', { name: 'Suivant' }).click();
+ok(await A.getByRole('heading', { name: /écran d'accueil/ }).isVisible() && await A.getByRole('tab', { name: 'iPhone' }).isVisible(), 'dernière étape : installer l’appli (iPhone / Android)');
+await A.getByRole('tab', { name: 'iPhone' }).click(); await A.screenshot({ path: SHOTS + '/e0-tuto-install.png' });
+await A.getByRole('button', { name: "C'est parti !" }).click(); await A.waitForTimeout(500);
+ok((await db.query(`select onboarded from profiles where id=(select id from auth.users where email='victor@test.fr')`)).rows[0].onboarded === true && !(await A.locator('.onb').count()), 'tutoriel terminé, mémorisé en base');
 await A.waitForFunction(() => /\d/.test(document.querySelector('.hchip b')?.textContent || ''));
 ok((await A.locator('.hchip b').first().textContent()) === '3', 'A connecté : 3 pellicules affichées');
 await A.screenshot({ path: SHOTS + '/e1-safari.png' });
@@ -83,7 +94,7 @@ await db.query(`update auctions set ends_at = now() - interval '1 second' where 
 await B.reload(); await B.waitForSelector('header.top'); await B.waitForTimeout(500);
 ok((await db.query(`select owner from cards where species_id='lynx-lynx' and lvl=2`)).rows[0].owner === ub, 'enchère clôturée : le lynx appartient à B');
 ok(await plumes('victor@test.fr') >= 170, 'A payé 120 plumes');
-await tab(B, 'Bestiaire'); ok(await B.locator('.cell', { hasText: 'Lynx boréal' }).isVisible(), 'le lynx apparaît dans le bestiaire de B');
+await tab(B, 'Bestiaire'); ok(await B.locator('.cell', { hasText: 'Lynx boréal' }).waitFor({ timeout: 8000 }).then(() => true, () => false), 'le lynx apparaît dans le bestiaire de B');
 
 console.log('Collectionneurs');
 await db.query(`update profiles set plumes = 5000 where id=$1`, [ua]);
@@ -93,10 +104,32 @@ ok(nOff === 8, `8 offres de collectionneurs (${nOff})`);
 await A.getByRole('button', { name: /Acheter/ }).first().click(); await A.waitForTimeout(600);
 ok(await plumes('victor@test.fr') < 5000, 'achat auprès d’un collectionneur débité');
 
+console.log('Bestiaire : filtres et tris');
+await tab(A, 'Bestiaire'); await A.waitForTimeout(300); await A.screenshot({ path: SHOTS + '/e5a-dex.png', fullPage: true });
+ok(await A.locator('.dex-head .ring').isVisible(), 'progression de la collection affichée');
+await A.getByRole('tab', { name: 'À découvrir' }).click(); await A.waitForTimeout(200);
+ok(await A.locator('.ghost-card').count() > 10, 'espèces à découvrir affichées avec indices');
+await A.getByRole('button', { name: /^Filtres/ }).click(); await A.locator('.sheet .fchip', { hasText: 'Oiseau' }).click();
+await A.screenshot({ path: SHOTS + '/e5b-filtres.png' });
+await A.locator('.sheet').getByRole('button', { name: /^Voir \d+ espèce/ }).click(); await A.waitForTimeout(200);
+const birdTxt = await A.locator('.ghost-card').allTextContents();
+ok(birdTxt.length > 0 && birdTxt.every(t => t.includes('Oiseau')), `filtre classe : ${birdTxt.length} oiseaux, que des oiseaux`);
+await A.getByRole('button', { name: 'Liste' }).click(); await A.waitForTimeout(200);
+ok(await A.locator('.dl').count() > 0, 'vue liste');
+await A.screenshot({ path: SHOTS + '/e5c-liste.png' });
+await A.getByRole('button', { name: 'Tout effacer' }).click(); await A.getByRole('tab', { name: 'Miennes' }).click();
+await A.locator('.sortsel select').selectOption('cote'); await A.waitForTimeout(200);
+const vals = (await A.locator('.dl-v').allTextContents()).map(t => parseInt(t));
+ok(vals.length > 0 && vals.every((v, i) => i === 0 || vals[i - 1] >= v), 'tri par cote décroissante');
+await A.getByRole('button', { name: 'Grille' }).click();
+
 console.log('Combat contre des animaux sauvages');
 await tab(A, 'Combat'); await A.locator('.cell.pick').first().click();
 await A.getByRole('button', { name: 'Lancer le combat' }).click();
-for (let i = 0; i < 80 && !(await A.getByRole('heading', { name: /Victoire|Défaite/ }).count()); i++) { await A.locator('.actions button').first().click(); await A.waitForTimeout(40) }
+await A.locator('.actions2 button').first().click(); await A.waitForTimeout(250); await A.screenshot({ path: SHOTS + '/e6a-combat-anim.png' }); await A.waitForTimeout(1600); await A.screenshot({ path: SHOTS + '/e6b-combat-tour.png' });
+ok(await A.locator('.arena2 .portrait').count() === 2 && await A.locator('.actions2 button').count() >= 3, 'arène : 2 portraits et capacités affichés');
+await A.getByRole('button', { name: /Auto/ }).click(); await A.getByRole('button', { name: '×2' }).click();
+await A.getByRole('heading', { name: /Victoire|Défaite/ }).waitFor({ timeout: 120000 });
 await A.waitForTimeout(600);
 ok(await A.getByRole('heading', { name: /Victoire|Défaite/ }).isVisible(), 'combat terminé');
 await A.screenshot({ path: SHOTS + '/e6-combat.png' });
@@ -110,7 +143,8 @@ ok((await db.query(`select count(*)::int n from defenses where owner=$1`, [ub]))
 await A.getByRole('button', { name: "Changer d'équipe" }).click().catch(() => {});
 await tab(A, 'Safari'); await tab(A, 'Combat'); await A.getByRole('button', { name: 'Autres joueurs' }).click(); await A.waitForTimeout(500);
 await A.locator('.cell.pick').first().click(); await A.getByRole('button', { name: 'Défier' }).click();
-for (let i = 0; i < 80 && !(await A.getByRole('heading', { name: /Victoire|Défaite/ }).count()); i++) { await A.locator('.actions button').first().click(); await A.waitForTimeout(40) }
+await A.getByRole('button', { name: /Auto/ }).click(); await A.getByRole('button', { name: '×2' }).click();
+await A.getByRole('heading', { name: /Victoire|Défaite/ }).waitFor({ timeout: 120000 });
 await A.waitForTimeout(700);
 ok((await db.query(`select count(*)::int n from duels where attacker=$1`, [ua])).rows[0].n === 1, 'duel enregistré, classement mis à jour');
 
@@ -121,9 +155,121 @@ await A.reload(); await A.waitForSelector('header.top'); await A.locator('#quest
 const after = await plumes('victor@test.fr'); const filmsAfter = (await db.query('select films from profiles where id=$1', [ua])).rows[0].films;
 ok(after > before || filmsAfter > filmsBefore, 'récompense de défi créditée');
 
+
+console.log('Succès');
+await tab(A, 'Profil'); await A.getByRole('tab', { name: /Succès/ }).click(); await A.locator('.achv').first().waitFor();
+ok(await A.locator('.achv').count() >= 30, `liste des succès (${await A.locator('.achv').count()})`);
+const plBefore = await plumes('victor@test.fr');
+await A.locator('.achv', { hasText: 'Premier déclic' }).getByRole('button', { name: 'Récupérer' }).click(); await A.waitForTimeout(600);
+ok(await plumes('victor@test.fr') === plBefore + 20, 'succès « Premier déclic » récupéré : +20 plumes');
+await A.screenshot({ path: SHOTS + '/e8-succes.png', fullPage: true });
+
+console.log('Amis');
+await db.query(`update profiles set pseudo = 'Ami' where id = $1`, [ub]);
+await A.getByRole('tab', { name: /Amis/ }).click(); await A.locator('.mycode .code').waitFor();
+await A.waitForFunction(() => /^[A-Z0-9]{6}$/.test(document.querySelector('.mycode .code')?.textContent || ''));
+const codeA = (await A.locator('.mycode .code').textContent()).trim();
+await tab(B, 'Profil'); await B.getByRole('tab', { name: /Amis/ }).click(); await B.getByLabel('Code ami à ajouter').fill(codeA.toLowerCase()); await B.getByRole('button', { name: 'Ajouter' }).click(); await B.waitForTimeout(500);
+await A.getByRole('tab', { name: /Succès/ }).click(); await A.getByRole('tab', { name: /Amis/ }).click(); await A.getByRole('button', { name: 'Accepter' }).waitFor();
+await A.getByRole('button', { name: 'Accepter' }).click(); await A.waitForTimeout(600);
+ok(await A.locator('.friend', { hasText: 'Ami' }).isVisible(), 'demande d’ami acceptée : B dans la liste de A');
+await A.locator('.friend', { hasText: 'Ami' }).click(); await A.locator('.pstats').waitFor();
+ok(await A.locator('.sheet .grid .cell').count() >= 1, 'profil de l’ami : ses plus belles cartes');
+await A.screenshot({ path: SHOTS + '/e9-ami.png' });
+await A.getByRole('button', { name: 'Défier en duel' }).click(); await A.locator('.challenge').waitFor();
+ok(await A.locator('.challenge').getByText(/Duel contre Ami/).isVisible(), 'défi lancé depuis la liste d’amis');
+await A.locator('.cell.pick').first().click(); await A.getByRole('button', { name: 'Lancer le duel' }).click();
+await A.getByRole('button', { name: /Auto/ }).click(); await A.getByRole('button', { name: '×2' }).click();
+await A.getByRole('heading', { name: /Victoire|Défaite/ }).waitFor({ timeout: 120000 }); await A.waitForTimeout(800);
+ok((await db.query(`select count(*)::int n from duels where attacker=$1`, [ua])).rows[0].n === 2, 'duel entre amis enregistré');
+await A.getByRole('button', { name: "Changer d'équipe" }).click();
+
+console.log('Guilde');
+await tab(A, 'Profil'); await A.getByRole('tab', { name: /Guilde/ }).click();
+await A.getByRole('button', { name: /Fonder une guilde/ }).click();
+await A.getByLabel('Nom').fill('Les Hiboux de Nancy'); await A.getByLabel(/Sigle/).fill('hib'); await A.getByLabel('Description').fill('Photographes de nuit');
+await A.locator('.emblems button').first().click(); await A.getByRole('button', { name: /^Fonder · 100 plumes/ }).click();
+await A.locator('.ghead').waitFor();
+ok(await A.getByRole('heading', { name: /Les Hiboux de Nancy/ }).isVisible() && await A.locator('.ghead .emblem .spr').count() === 1, 'guilde fondée avec son emblème');
+await tab(B, 'Profil'); await B.getByRole('tab', { name: /Guilde/ }).click(); await B.getByLabel('Chercher une guilde').fill('hib'); await B.waitForTimeout(600);
+await B.locator('.guildrow', { hasText: 'Les Hiboux' }).getByRole('button', { name: 'Rejoindre' }).click(); await B.locator('.ghead').waitFor();
+ok((await B.locator('.friend').count()) === 2, 'B a rejoint la guilde (2 membres)');
+await B.getByLabel('Message à la guilde').fill('Salut les hiboux !'); await B.getByRole('button', { name: 'Envoyer' }).click(); await B.waitForTimeout(500);
+await A.getByRole('tab', { name: /Amis/ }).click(); await A.getByRole('tab', { name: /Guilde/ }).click(); await A.locator('.chat').waitFor();
+ok(await A.locator('.chat .msg', { hasText: 'Salut les hiboux !' }).isVisible(), 'message de B reçu par A dans la discussion');
+await A.screenshot({ path: SHOTS + '/e10-guilde.png', fullPage: true });
+
+console.log('Notifications');
+await B.reload(); await B.waitForSelector('header.top'); await B.waitForTimeout(800);
+ok(await B.locator('.bell .bcount').isVisible(), `cloche de B : ${await B.locator('.bell .bcount').textContent().catch(() => '0')} notification(s) non lue(s)`);
+await B.locator('.bell').click(); await B.locator('.nlist').waitFor();
+ok(await B.locator('.nitem', { hasText: 'Ta défense a été attaquée' }).count() >= 1 && await B.locator('.nitem', { hasText: 'Nouvel ami' }).count() >= 1, 'boîte de réception : duel subi et nouvel ami');
+await B.screenshot({ path: SHOTS + '/e12-notifs.png' });
+await B.locator('.nitem', { hasText: 'Ta défense a été attaquée' }).first().click(); await B.waitForTimeout(300);
+ok((await B.locator('nav.tabs button[aria-current="page"]').textContent()).startsWith('Combat'), 'toucher la notification ouvre le bon onglet');
+ok((await db.query(`select count(*)::int n from notifications where user_id = $1 and read_at is null`, [ub])).rows[0].n === 0 && !(await B.locator('.bell .bcount').count()), 'notifications marquées comme lues');
+await tab(B, 'Safari'); await B.waitForTimeout(800);
+ok(await B.locator('.nprompt').isVisible(), 'invitation à activer les notifications sur l’écran Safari');
+await B.screenshot({ path: SHOTS + '/e13-invitation-notifs.png' });
+await B.getByRole('button', { name: 'Plus tard' }).click();
+ok(!(await B.locator('.nprompt').count()), '« Plus tard » masque l’invitation');
+await tab(B, 'Profil'); await B.getByRole('tab', { name: 'Profil' }).click();
+await B.locator('#reglages-notifs .switch', { hasText: 'Guilde' }).click(); await B.waitForTimeout(500);
+ok((await db.query(`select notif->>'guilde' g from profiles where id = $1`, [ub])).rows[0].g === 'false', 'réglage par type enregistré (guilde coupée)');
+
+console.log('Modération');
+await tab(A, 'Profil'); await A.getByRole('tab', { name: /Guilde/ }).click(); await A.locator('.chat').waitFor();
+await A.getByLabel('Message à la guilde').fill('Bienvenue à toi'); await A.getByRole('button', { name: 'Envoyer' }).click(); await A.waitForTimeout(500);
+await B.getByRole('tab', { name: /Guilde/ }).click(); await B.locator('.chat').waitFor();
+await B.locator('.chat .msg', { hasText: 'Bienvenue à toi' }).click();
+await B.getByRole('button', { name: 'Signaler ce message' }).click(); await B.getByLabel('Spam, publicité').check();
+await B.screenshot({ path: SHOTS + '/e14-signaler.png' });
+await B.getByRole('button', { name: 'Envoyer le signalement' }).click(); await B.waitForTimeout(500);
+ok((await db.query(`select count(*)::int n from reports where reporter = $1 and kind = 'message'`, [ub])).rows[0].n === 1, 'message signalé depuis la discussion');
+await B.waitForTimeout(2600);
+await B.getByLabel('Message à la guilde').fill('espèce de connard'); await B.getByRole('button', { name: 'Envoyer' }).click(); await B.waitForTimeout(500);
+ok(await B.locator('.toast', { hasText: /inappropri/ }).isVisible() && !(await db.query(`select count(*)::int n from guild_messages where body like '%connard%'`)).rows[0].n, 'insulte bloquée avant envoi');
+await db.query(`update profiles set is_admin = true where id = $1`, [ua]);
+await tab(A, 'Safari'); await A.reload(); await A.waitForSelector('header.top'); await tab(A, 'Profil'); await A.getByRole('tab', { name: 'Profil' }).click();
+await A.locator('.admin .report').first().waitFor();
+ok(await A.locator('.admin .report', { hasText: 'Bienvenue à toi' }).isVisible(), 'l’administrateur voit le signalement');
+await A.screenshot({ path: SHOTS + '/e15-admin.png' });
+await A.locator('.admin .report', { hasText: 'Bienvenue à toi' }).getByRole('button', { name: 'Ignorer' }).click(); await A.waitForTimeout(500);
+ok((await db.query(`select count(*)::int n from reports where status = 'open'`)).rows[0].n === 0, 'signalement traité');
+await db.query(`update profiles set is_admin = false where id = $1`, [ua]);
+
+console.log('Thème');
+await A.getByRole('radio', { name: 'Sombre' }).click();
+ok(await A.evaluate(() => document.documentElement.dataset.theme) === 'dark', 'thème sombre appliqué');
+await A.reload(); await A.waitForSelector('header.top');
+ok(await A.evaluate(() => document.documentElement.dataset.theme) === 'dark', 'thème mémorisé après rechargement');
+await A.screenshot({ path: SHOTS + '/e16-sombre.png' });
+await tab(A, 'Profil'); await A.getByRole('tab', { name: 'Profil' }).click(); await A.getByRole('radio', { name: 'Clair' }).click();
+ok(await A.evaluate(() => document.documentElement.dataset.theme) === 'light' && await A.evaluate(() => getComputedStyle(document.body).backgroundColor) === 'rgb(238, 240, 230)', 'thème clair forcé');
+await A.getByRole('radio', { name: 'Automatique' }).click();
+
+console.log('Partager une carte');
+await tab(A, 'Bestiaire'); await A.locator('.dex .cell').first().click(); await A.locator('.sheet').waitFor();
+const [dl] = await Promise.all([A.waitForEvent('download'), A.getByRole('button', { name: 'Partager' }).click()]);
+const imgPath = SHOTS + '/e11-partage.png'; await dl.saveAs(imgPath);
+const { statSync } = await import('node:fs');
+ok(/^bestiaire-.+\.png$/.test(dl.suggestedFilename()) && statSync(imgPath).size > 50000, `image de la carte générée (${dl.suggestedFilename()}, ${Math.round(statSync(imgPath).size / 1024)} Ko)`);
+await A.keyboard.press('Escape');
+
+console.log('Pages légales');
+await tab(A, 'Profil'); await A.getByRole('tab', { name: 'Profil' }).click();
+await A.getByRole('button', { name: 'Mentions légales' }).click();
+ok(await A.locator('.legal h2', { hasText: 'Mentions légales' }).isVisible() && await A.locator('.legal mark.todo').count() > 0, 'mentions légales (champs à compléter signalés)');
+await A.locator('.sheet').getByRole('tab', { name: 'Confidentialité' }).click();
+ok(await A.locator('.legal').getByText(/Supprimer mon compte/).isVisible(), 'politique de confidentialité : suppression du compte expliquée');
+await A.locator('.sheet').getByRole('button', { name: 'Fermer' }).click();
+ok(await A.getByRole('button', { name: 'Supprimer mon compte' }).isVisible() && await A.locator('.install').count() === 1, 'profil : installation de l’appli et suppression du compte');
+
 console.log('Abonnement');
 await tab(A, 'Profil'); ok(await A.getByText('Passe à Bestiaire+').isVisible(), 'offre Bestiaire+ affichée');
-await A.getByRole('button', { name: "S'abonner" }).click(); await A.waitForTimeout(800);
+await A.getByRole('button', { name: "S'abonner" }).click(); await A.waitForTimeout(400);
+ok(!A.url().includes('stripe'), 'paiement bloqué tant que la case de renonciation n’est pas cochée');
+await A.getByRole('checkbox').check(); await A.getByRole('button', { name: "S'abonner" }).click(); await A.waitForTimeout(800);
 ok(A.url().includes('stripe-create-checkout'), 'redirection vers le paiement Stripe');
 await db.query(`update profiles set premium_until = now() + interval '30 days' where id=$1`, [ua]);
 await A.goto(APP); await A.waitForSelector('header.top'); await tab(A, 'Profil'); await A.waitForTimeout(400);
@@ -137,8 +283,8 @@ ok(hack >= 400 && await plumes('victor@test.fr') < 999999, 'tentative de triche 
 
 console.log('\nErreurs JavaScript :', errors.length ? errors : 'aucune');
 console.log('Réponses HTTP en erreur :', http4xx);
-const expected = http4xx.filter(x => /grant_type=password/.test(x) || /PATCH \/rest\/v1\/profiles\?id=neq/.test(x));
-ok(expected.length === http4xx.length, 'seules les erreurs HTTP attendues (première connexion avant création du compte, tentative de triche)');
+const expected = http4xx.filter(x => /grant_type=password/.test(x) || /PATCH \/rest\/v1\/profiles\?id=neq/.test(x) || /rpc\/guild_post/.test(x));
+ok(expected.length === http4xx.length, 'seules les erreurs HTTP attendues (première connexion, tentative de triche, insulte refusée)');
 ok(errors.length === 0, 'aucune erreur JavaScript');
 console.log(`\n${pass} réussis, ${fail} échoués`);
 await browser.close(); await db.end(); process.exit(fail ? 1 : 0);

@@ -1,4 +1,5 @@
 import { ReactNode, useEffect, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { Species, TIERS, QUAL, qIndex, FRAME, photoStyle } from '../game/species';
 
 export function Print({ s, q, lvl, phase, isNew, foot, dev }: { s: Species; q: number; lvl: number; phase?: string | null; isNew?: boolean; foot?: ReactNode; dev?: boolean }) {
@@ -22,11 +23,11 @@ export function Print({ s, q, lvl, phase, isNew, foot, dev }: { s: Species; q: n
 export function Sheet({ onClose, children, label }: { onClose: () => void; children: ReactNode; label: string }) {
   const ref = useRef<HTMLDivElement>(null);
   useEffect(() => { const k = (e: KeyboardEvent) => e.key === 'Escape' && onClose(); addEventListener('keydown', k); ref.current?.focus(); return () => removeEventListener('keydown', k) }, [onClose]);
-  return (
+  // rendu au niveau de la page : un parent avec effet de flou (en-tête) piégerait la feuille
+  return createPortal(
     <div className="modal" role="dialog" aria-modal="true" aria-label={label} onClick={e => { if (e.target === e.currentTarget) onClose() }}>
       <div className="sheet" ref={ref} tabIndex={-1}>{children}</div>
-    </div>
-  );
+    </div>, document.body);
 }
 
 export function Toast({ msg }: { msg: string | null }) { return msg ? <div className="toast" role="status">{msg}</div> : null }

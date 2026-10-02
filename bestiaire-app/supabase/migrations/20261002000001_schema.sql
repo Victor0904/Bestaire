@@ -56,6 +56,16 @@ create table if not exists public.profiles (
 );
 
 -- Profil créé automatiquement à l'inscription
+-- Compteurs (succès, objectifs de guilde) — ajoutés après la première version, d'où « if not exists »
+alter table public.profiles add column if not exists shots integer not null default 0;
+alter table public.profiles add column if not exists night_shots integer not null default 0;
+alter table public.profiles add column if not exists fusions integer not null default 0;
+alter table public.profiles add column if not exists week_shots integer not null default 0;
+alter table public.profiles add column if not exists week_of date;
+alter table public.profiles add column if not exists last_seen timestamptz;
+alter table public.profiles add column if not exists onboarded boolean not null default false;
+alter table public.profiles add column if not exists achievements text[] not null default '{}';
+
 create or replace function public.handle_new_user() returns trigger
 language plpgsql security definer set search_path = public as $$
 begin
@@ -180,7 +190,7 @@ create policy duels_own on public.duels for select using (attacker = auth.uid() 
 revoke all on public.profiles from anon, authenticated;
 -- (premium_until et stripe_customer ne sont jamais modifiables par le joueur)
 grant select on public.profiles to authenticated;
-grant update (pseudo, tz, wishes) on public.profiles to authenticated;
+grant update (pseudo, tz, wishes, onboarded) on public.profiles to authenticated;
 revoke insert, update, delete on public.species, public.cards, public.auctions, public.sales, public.bot_offers, public.defenses, public.duels from anon, authenticated;
 grant select on public.species, public.sales to anon, authenticated;
 grant select on public.cards, public.auctions, public.bot_offers, public.defenses, public.duels to authenticated;
@@ -304,6 +314,16 @@ begin
     if hit then qs := jsonb_set(qs, array[i::text,'prog'], to_jsonb((q->>'prog')::int + 1)); end if;
   end loop;
   update profiles set quests = qs where id = p_uid;
+  -- compteurs pour les succès et l'objectif hebdomadaire de guilde
+  if p_type = 'shot' then
+    update profiles set shots = shots + 1,
+      night_shots = night_shots + (case when g_phase(tz) = 'nuit' then 1 else 0 end),
+      week_shots = case when week_of = date_trunc('week', now())::date then week_shots + 1 else 1 end,
+      week_of = date_trunc('week', now())::date
+    where id = p_uid;
+  elsif p_type = 'fuse' then
+    update profiles set fusions = fusions + 1 where id = p_uid;
+  end if;
 end $$;
 
 -- =====================================================================
@@ -320,8 +340,10 @@ begin
   perform settle_auctions();
   p := g_refill(uid);
   perform g_quests(uid);
-  select * into p from profiles where id = uid;
+  update profiles set last_seen = now() where id = uid returning * into p;
   return jsonb_build_object(
+    'onboarded', p.onboarded, 'achievements', to_jsonb(p.achievements),
+    'is_admin', coalesce((to_jsonb(p)->>'is_admin')::boolean, false), 'muted_until', to_jsonb(p)->'muted_until', 'notif', to_jsonb(p)->'notif',
     'pseudo', p.pseudo, 'tz', p.tz, 'plumes', p.plumes, 'films', p.films,
     'next_film_at', case when p.films >= g_film_cap(p) then null else p.films_at + make_interval(mins => g_film_minutes(p)) end,
     'film_cap', g_film_cap(p), 'film_minutes', g_film_minutes(p),

@@ -1,8 +1,11 @@
+import { lazy, Suspense } from 'react';
+const LegalSheet = lazy(() => import('./Legal').then(m => ({ default: m.LegalSheet })));
 import { useState } from 'react';
 import { supabase, configured } from '../lib/supabase';
 import { errMsg } from '../lib/api';
 
 export function Login() {
+  const [legal, setLegal] = useState<null | 'mentions' | 'confidentialite' | 'cgu'>(null);
   const [email, setEmail] = useState(''); const [pwd, setPwd] = useState(''); const [mode, setMode] = useState<'link' | 'pwd'>('link');
   const [msg, setMsg] = useState(''); const [busy, setBusy] = useState(false);
   const redirect = location.origin + location.pathname;
@@ -29,6 +32,8 @@ export function Login() {
         <button type="button" className="btn ghost" onClick={() => supabase.auth.signInWithOAuth({ provider: 'google', options: { redirectTo: redirect } })}>Continuer avec Google</button>
         {msg && <p className="note" role="status">{msg}</p>}
       </form>
+      <p className="note legalnote">En créant un compte, tu acceptes les <button type="button" className="linklike" onClick={() => setLegal('cgu')}>conditions d'utilisation</button> et la <button type="button" className="linklike" onClick={() => setLegal('confidentialite')}>politique de confidentialité</button>. <button type="button" className="linklike" onClick={() => setLegal('mentions')}>Mentions légales</button></p>
+      {legal && <Suspense fallback={null}><LegalSheet start={legal} onClose={() => setLegal(null)} /></Suspense>}
     </div>
   );
 }
