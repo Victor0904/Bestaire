@@ -1,0 +1,178 @@
+// Tests de la base Bestiaire sur un PostgreSQL local (émulation Supabase).
+// Usage : PGHOST=/tmp/pgtest PGPORT=54329 PGUSER=postgres PGDATABASE=bestiaire node supabase/tests/db.test.mjs
+import pg from 'pg';
+const db = new pg.Pool();
+let pass = 0, fail = 0;
+const ok = (c, m) => { if (c) { pass++; console.log('  ✓', m) } else { fail++; console.log('  ✗', m) } };
+async function as(uid, sql, params = []) {
+  const c = await db.connect();
+  try {
+    await c.query('begin');
+    await c.query(`select set_config('request.jwt.claim.sub', $1, true)`, [uid || '']);
+    await c.query(uid ? 'set local role authenticated' : 'set local role anon');
+    const r = await c.query(sql, params); await c.query('commit'); return r;
+  } catch (e) { await c.query('rollback'); throw e } finally { c.release() }
+}
+const fails = async (p) => { try { await p; return null } catch (e) { return e.message } };
+const admin = (sql, p) => db.query(sql, p);
+
+await admin('truncate public.cards, public.auctions, public.sales, public.bot_offers, public.defenses, public.duels, public.profiles cascade; delete from auth.users;');
+const A = (await admin(`insert into auth.users(email) values ('a@test.fr') returning id`)).rows[0].id;
+const B = (await admin(`insert into auth.users(email) values ('b@test.fr') returning id`)).rows[0].id;
+const C = (await admin(`insert into auth.users(email) values ('c@test.fr') returning id`)).rows[0].id;
+
+console.log('Profils et état');
+let st = (await as(A, 'select get_state() s')).rows[0].s;
+ok(st.plumes === 50 && st.films === 3, 'nouveau joueur : 50 plumes, 3 pellicules');
+ok(['F','P','H','M','V','L'].includes(st.daily_biome), 'biome du jour fourni par le serveur');
+ok(Array.isArray(st.quests) && st.quests.length === 3, '3 défis du jour');
+ok(st.premium === false && st.film_cap === 6, 'non premium : réserve de 6');
+
+console.log('Sécurité (RLS)');
+ok(await fails(as(A, `update profiles set plumes = 99999 where id = $1`, [A])) !== null, 'impossible de modifier ses plumes directement');
+ok(await fails(as(A, `update profiles set premium_until = now() + interval '1 year' where id = $1`, [A])) !== null, 'impossible de s’offrir le premium');
+ok(await fails(as(A, `insert into cards(owner, species_id, q) values ($1, 'lynx-lynx', 99)`, [A])) !== null, 'impossible de se créer une carte');
+const upd = await as(A, `update profiles set pseudo = 'Victor' where id = $1 returning pseudo`, [A]);
+ok(upd.rows[0]?.pseudo === 'Victor', 'pseudo modifiable');
+ok((await as(B, `select * from profiles where id = $1`, [A])).rowCount === 0, 'B ne voit pas le profil de A');
+ok(await fails(as(null, 'select get_state()')) !== null, 'visiteur non connecté refusé');
+
+console.log('Safari');
+const shot = (await as(A, `select safari_shoot('F') r`)).rows[0].r;
+ok(shot.length === 5, '5 photos par pellicule');
+const sp = (await admin(`select id, biomes, pays from species where id = any($1)`, [shot.map(x => x.species_id)])).rows;
+ok(sp.every(s => s.biomes.includes('F') && !s.pays), 'toutes les espèces vivent en forêt et sont françaises');
+ok(shot.every(x => x.q >= 0 && x.q <= 99 && x.lvl === 1), 'qualité 0–99, niveau 1');
+st = (await as(A, 'select get_state() s')).rows[0].s;
+ok(st.films === 2 && st.next_film_at, 'une pellicule consommée, recharge programmée');
+await as(A, `select safari_shoot('P')`); await as(A, `select safari_shoot('H')`);
+ok(await fails(as(A, `select safari_shoot('M')`)) !== null, 'refus quand il n’y a plus de pellicule');
+ok(await fails(as(A, `select safari_shoot('Z')`)) !== null, 'biome inconnu refusé');
+const cardsA = (await as(A, 'select count(*)::int n from cards')).rows[0].n;
+ok(cardsA === 15, '15 cartes visibles pour A');
+ok((await as(B, 'select count(*)::int n from cards')).rows[0].n === 0, 'B ne voit pas les cartes de A');
+
+console.log('Recharge');
+await admin(`update profiles set films = 0, films_at = now() - interval '2 hours 5 minutes' where id = $1`, [A]);
+st = (await as(A, 'select get_state() s')).rows[0].s;
+ok(st.films === 2, '+2 pellicules après 2 h');
+await admin(`update profiles set films = 0, films_at = now() - interval '30 hours' where id = $1`, [A]);
+ok((await as(A, 'select get_state() s')).rows[0].s.films === 6, 'plafond de 6');
+
+console.log('Premium');
+await admin(`update profiles set premium_until = now() + interval '30 days', films = 0, films_at = now() - interval '81 minutes' where id = $1`, [B]);
+st = (await as(B, 'select get_state() s')).rows[0].s;
+ok(st.premium && st.film_cap === 9 && st.film_minutes === 40, 'premium : réserve 9, recharge 40 min');
+ok(st.films === 2, 'premium : +2 pellicules après 81 min');
+await admin(`update profiles set films = 0, films_at = now() - interval '30 hours' where id = $1`, [B]);
+ok((await as(B, 'select get_state() s')).rows[0].s.films === 9, 'premium : plafond de 9');
+await admin(`update profiles set premium_until = now() - interval '1 day' where id = $1`, [B]);
+ok((await as(B, 'select get_state() s')).rows[0].s.premium === false, 'abonnement expiré : plus premium');
+
+console.log('Tirage : distribution des raretés (2 000 photos)');
+await admin(`update profiles set films = 400 where id = $1`, [C]);
+const daily = (await as(C, 'select get_state() s')).rows[0].s.daily_biome; const tb = daily === 'P' ? 'F' : 'P';
+const tiers = [0,0,0,0,0]; let night = 0, total = 0;
+for (let i = 0; i < 400; i++) { const r = (await as(C, `select safari_shoot($1) r`, [tb])).rows[0].r; for (const x of r) { total++; } }
+const dist = (await admin(`select s.tier, count(*)::int n from cards c join species s on s.id = c.species_id where c.owner = $1 group by 1 order by 1`, [C])).rows;
+dist.forEach(r => tiers[r.tier] = r.n);
+const pct = tiers.map(n => Math.round(1000 * n / total) / 10);
+console.log(`    répartition commun→légendaire en ${tb} (%) :`, pct.join(' / '));
+ok((await admin(`select count(*)::int n from cards c join species s on s.id = c.species_id where c.owner = $1 and s.sprite is null`, [C])).rows[0].n === 0, 'jamais d’espèce sans photo');
+ok((await admin(`select g_cote(0,1,80,false) a, g_cote(2,3,95,true) b`)).rows[0].a === 7, 'cote arrondie comme dans l’application (6,5 → 7)');
+ok(pct[0] > 52 && pct[0] < 68 && pct[1] > 19 && pct[1] < 31 && pct[2] > 6 && pct[2] < 14 && pct[3] < 7, 'répartition proche de 60/25/10/4/1');
+
+console.log('Fusion');
+await admin(`delete from cards where owner = $1`, [A]);
+await admin(`insert into cards(owner, species_id, q, lvl) values ($1,'lynx-lynx',30,1),($1,'lynx-lynx',90,1),($1,'lynx-lynx',50,2)`, [A]);
+const f = (await as(A, `select fuse('lynx-lynx', 1) r`)).rows[0].r;
+ok(f.lvl === 2 && f.q === 90, 'deux niveau 1 → niveau 2, meilleure photo gardée');
+ok(await fails(as(A, `select fuse('lynx-lynx', 1)`)) !== null, 'refus sans deux exemplaires du même niveau');
+const f2 = (await as(A, `select fuse('lynx-lynx', 2) r`)).rows[0].r;
+ok(f2.lvl === 3 && (await as(A, `select count(*)::int n from cards`)).rows[0].n === 1, 'niveau 3, plus qu’une carte');
+let ups = 0, perf = 0;
+for (let i = 0; i < 200; i++) { await admin(`insert into cards(owner, species_id, q, lvl) values ($1,'parus-major',85,1),($1,'parus-major',86,1)`, [A]); const r = (await as(A, `select fuse('parus-major', 1) r`)).rows[0].r; if (r.up) ups++; if (r.q >= 95) perf++; }
+ok(perf === 0, 'deux « superbe » ne donnent jamais « parfaite »');
+for (let i = 0; i < 200; i++) { await admin(`insert into cards(owner, species_id, q, lvl) values ($1,'pica-pica',10,1),($1,'pica-pica',20,1)`, [A]); const r = (await as(A, `select fuse('pica-pica', 1) r`)).rows[0].r; if (r.up) ups++; }
+ok(ups > 25 && ups < 85, `~25 % d’amélioration entre deux floues (${ups}/200)`);
+
+console.log('Marché : enchères');
+await admin(`update profiles set plumes = 1000 where id in ($1,$2,$3)`, [A, B, C]);
+const card = (await admin(`insert into cards(owner, species_id, q, lvl) values ($1,'vulpes-vulpes',70,2) returning id`, [A])).rows[0].id;
+ok(await fails(as(B, `select list_auction($1, 10, null, 60)`, [card])) !== null, 'B ne peut pas vendre la carte de A');
+const aid = (await as(A, `select list_auction($1, 20, 200, 60) r`, [card])).rows[0].r;
+ok((await as(A, `select status from cards where id = $1`, [card])).rows[0].status === 'auction', 'carte bloquée pendant la vente');
+const tmp = (await admin(`insert into cards(owner, species_id, q, lvl) values ($1,'vulpes-vulpes',10,2) returning id`, [A])).rows[0].id;
+ok(await fails(as(A, `select fuse('vulpes-vulpes', 2)`)) !== null, 'carte en vente exclue des fusions');
+await admin(`delete from cards where id = $1`, [tmp]);
+ok(await fails(as(A, `select place_bid($1, 30)`, [aid])) !== null, 'le vendeur ne peut pas enchérir');
+ok(await fails(as(B, `select place_bid($1, 10)`, [aid])) !== null, 'mise inférieure au départ refusée');
+await as(B, `select place_bid($1, 20)`, [aid]);
+ok((await admin(`select plumes from profiles where id = $1`, [B])).rows[0].plumes === 980, 'B : 20 plumes bloquées');
+ok(await fails(as(C, `select place_bid($1, 20)`, [aid])) !== null, 'surenchère < +5 % refusée');
+await as(C, `select place_bid($1, 30)`, [aid]);
+ok((await admin(`select plumes from profiles where id = $1`, [B])).rows[0].plumes === 1000, 'B remboursé quand C surenchérit');
+await as(C, `select place_bid($1, 40)`, [aid]);
+ok((await admin(`select plumes from profiles where id = $1`, [C])).rows[0].plumes === 960, 'C relance : ne paie que la différence');
+await admin(`update auctions set ends_at = now() + interval '30 seconds' where id = $1`, [aid]);
+await as(B, `select place_bid($1, 50)`, [aid]);
+ok((await admin(`select ends_at > now() + interval '100 seconds' ok from auctions where id = $1`, [aid])).rows[0].ok, 'offre de dernière minute : +2 min');
+await admin(`update auctions set ends_at = now() - interval '1 second' where id = $1`, [aid]);
+await as(A, `select get_state()`);
+const sold = (await admin(`select status, best_bid from auctions where id = $1`, [aid])).rows[0];
+ok(sold.status === 'sold' && sold.best_bid === 50, 'enchère clôturée et vendue 50');
+ok((await admin(`select owner from cards where id = $1`, [card])).rows[0].owner === B, 'carte transférée au gagnant');
+ok((await admin(`select plumes from profiles where id = $1`, [A])).rows[0].plumes === 1050, 'vendeur payé');
+ok((await admin(`select plumes from profiles where id = $1`, [C])).rows[0].plumes === 1000, 'perdant remboursé');
+ok((await as(A, `select count(*)::int n from sales where species_id = 'vulpes-vulpes'`)).rows[0].n === 1, 'vente dans l’historique');
+const card2 = (await admin(`insert into cards(owner, species_id, q, lvl) values ($1,'lynx-lynx',99,1) returning id`, [A])).rows[0].id;
+const aid2 = (await as(A, `select list_auction($1, 100, 300, 10) r`, [card2])).rows[0].r;
+const bn = (await as(C, `select place_bid($1, 300) r`, [aid2])).rows[0].r;
+ok(bn.bought && (await admin(`select owner from cards where id = $1`, [card2])).rows[0].owner === C, 'achat immédiat : carte transférée tout de suite');
+ok(await fails(as(A, `select list_auction($1, 10, null, 7)`, [card])) !== null, 'durée hors liste refusée');
+const cardU = (await admin(`insert into cards(owner, species_id, q, lvl) values ($1,'turdus-merula',50,1) returning id`, [A])).rows[0].id;
+const aidU = (await as(A, `select list_auction($1, 9999, null, 10) r`, [cardU])).rows[0].r;
+await admin(`update auctions set ends_at = now() - interval '1 second' where id = $1`, [aidU]);
+await as(A, `select settle_auctions()`);
+ok((await admin(`select status from cards where id = $1`, [cardU])).rows[0].status === 'owned', 'sans acheteur à prix excessif : l’animal revient');
+ok(await fails(as(A, `update auctions set best_bid = 1 where id = $1`, [aid])) !== null, 'impossible de modifier une enchère directement');
+
+console.log('Marché : collectionneurs et vente rapide');
+const offers = (await as(A, `select * from get_bot_offers()`)).rows;
+ok(offers.length === 8, '8 offres de collectionneurs');
+ok(offers.filter(o => o.species_id.startsWith('x-')).length >= 2, 'au moins 2 espèces étrangères');
+const cheap = offers.sort((a, b) => a.price - b.price)[0];
+const before = (await admin(`select plumes from profiles where id = $1`, [A])).rows[0].plumes;
+await as(A, `select buy_bot_offer($1)`, [cheap.id]);
+ok((await admin(`select plumes from profiles where id = $1`, [A])).rows[0].plumes === before - cheap.price, 'achat débité');
+ok(await fails(as(B, `select buy_bot_offer($1)`, [cheap.id])) !== null, 'offre déjà vendue indisponible');
+const qs = (await as(A, `select quick_sell($1) r`, [cardU])).rows[0].r;
+ok(qs === 3, 'vente rapide à 60 % de la cote (merle nette niv. 1 = 3 plumes)');
+
+console.log('Défis');
+await admin(`update profiles set quests = jsonb_set(quests, '{0,prog}', to_jsonb((quests->0->>'goal')::int)) where id = $1`, [A]);
+const rw = (await as(A, `select claim_quest(0) r`)).rows[0].r;
+ok(rw && (rw.plumes || rw.films), 'récompense de défi récupérée');
+ok(await fails(as(A, `select claim_quest(0)`)) !== null, 'pas de double récupération');
+ok(await fails(as(A, `select claim_quest(1)`)) !== null, 'défi non terminé refusé');
+
+console.log('Combats');
+const w = (await as(A, `select battle_reward(true, array['lynx-lynx','parus-major'], array[3,1]) r`)).rows[0].r;
+ok(w.gain === 6*5*3 + 6*1*1, `gain = 6 × (rareté+1) × niveau (${w.gain})`);
+const big = (await as(A, `select battle_reward(true, array['lynx-lynx','lynx-lynx','lynx-lynx'], array[7,7,7]) r`)).rows[0].r;
+ok(big.gain === 400, 'gain plafonné à 400');
+await admin(`update profiles set rewards_count = 30 where id = $1`, [A]);
+ok((await as(A, `select battle_reward(true, array['lynx-lynx'], array[1]) r`)).rows[0].r.gain === 0, '30 récompenses par jour maximum');
+const cB = (await admin(`insert into cards(owner, species_id, q, lvl) values ($1,'ursus-arctos',60,2) returning id`, [B])).rows[0].id;
+ok(await fails(as(A, `select save_defense(array[$1::bigint])`, [cB])) !== null, 'impossible d’enregistrer la carte d’un autre en défense');
+await as(B, `select save_defense(array[$1::bigint])`, [cB]);
+ok((await as(A, `select count(*)::int n from defenses`)).rows[0].n === 1, 'défense de B visible par tous');
+const d = (await as(A, `select record_duel($1, true) r`, [B])).rows[0].r;
+ok(d.delta > 0 && d.gain > 15, `victoire en duel : +${d.delta} points, +${d.gain} plumes`);
+ok(await fails(as(B, `select record_duel($1, true)`, [B])) !== null, 'pas de duel contre soi-même');
+await admin(`update profiles set duels_count = 20 where id = $1`, [A]);
+ok(await fails(as(A, `select record_duel($1, true)`, [B])) !== null, '20 duels par jour maximum');
+
+console.log(`\n${pass} réussis, ${fail} échoués`);
+await db.end();
+process.exit(fail ? 1 : 0);

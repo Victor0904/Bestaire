@@ -1,0 +1,1352 @@
+﻿[
+    {
+        "id":  "sciurus-vulgaris",
+        "sci":  "Sciurus vulgaris",
+        "inat":  "Sciurus vulgaris",
+        "nomFr":  "Écureuil roux",
+        "file":  "sciurus-vulgaris.jpg",
+        "licence":  "cc-by-sa",
+        "credit":  "(c) Rhododendrites, some rights reserved (CC BY-SA)",
+        "source":  "https://www.inaturalist.org/photos/462357539"
+    },
+    {
+        "id":  "erinaceus-europaeus",
+        "sci":  "Erinaceus europaeus",
+        "inat":  "Erinaceus europaeus",
+        "nomFr":  "Hérisson commun",
+        "file":  "erinaceus-europaeus.jpg",
+        "licence":  "cc-by-sa",
+        "credit":  "(c) Michael Gäbler, some rights reserved (CC BY-SA)",
+        "source":  "https://www.inaturalist.org/photos/132296376"
+    },
+    {
+        "id":  "vulpes-vulpes",
+        "sci":  "Vulpes vulpes",
+        "inat":  "Vulpes vulpes",
+        "nomFr":  "Renard roux",
+        "file":  "vulpes-vulpes.jpg",
+        "licence":  "cc-by-nc",
+        "credit":  "(c) Joanne Muis Redwood, some rights reserved (CC BY-NC), uploaded by Joanne Muis Redwood",
+        "source":  "https://www.inaturalist.org/photos/6568074"
+    },
+    {
+        "id":  "capreolus-capreolus",
+        "sci":  "Capreolus capreolus",
+        "inat":  "Capreolus capreolus",
+        "nomFr":  "Chevreuil européen",
+        "file":  "capreolus-capreolus.jpeg",
+        "licence":  "cc-by-nc",
+        "credit":  "(c) romanvrbicek, some rights reserved (CC BY-NC), uploaded by romanvrbicek",
+        "source":  "https://www.inaturalist.org/photos/148547129"
+    },
+    {
+        "id":  "sus-scrofa",
+        "sci":  "Sus scrofa",
+        "inat":  "Sus scrofa",
+        "nomFr":  "Sanglier",
+        "file":  "sus-scrofa.jpg",
+        "licence":  "cc-by-nc-nd",
+        "credit":  "(c) Nathalie Hausser, some rights reserved (CC BY-NC-ND)",
+        "source":  "https://www.inaturalist.org/photos/414500081"
+    },
+    {
+        "id":  "cervus-elaphus",
+        "sci":  "Cervus elaphus",
+        "inat":  "Cervus elaphus",
+        "nomFr":  "Cerf élaphe",
+        "file":  "cervus-elaphus.jpg",
+        "licence":  "cc-by-nc",
+        "credit":  "(c) Jon J. Laysell, some rights reserved (CC BY-NC), uploaded by Jon J. Laysell",
+        "source":  "https://www.inaturalist.org/photos/25186445"
+    },
+    {
+        "id":  "meles-meles",
+        "sci":  "Meles meles",
+        "inat":  "Meles meles",
+        "nomFr":  "Blaireau européen",
+        "file":  "meles-meles.jpg",
+        "licence":  "cc-by",
+        "credit":  "(c) caroline legg, some rights reserved (CC BY)",
+        "source":  "https://www.inaturalist.org/photos/172054371"
+    },
+    {
+        "id":  "lepus-europaeus",
+        "sci":  "Lepus europaeus",
+        "inat":  "Lepus europaeus",
+        "nomFr":  "Lièvre d\u0027Europe",
+        "file":  "lepus-europaeus.jpg",
+        "licence":  "cc-by-nc",
+        "credit":  "(c) Paul Cools, some rights reserved (CC BY-NC), uploaded by Paul Cools",
+        "source":  "https://www.inaturalist.org/photos/1843520"
+    },
+    {
+        "id":  "oryctolagus-cuniculus",
+        "sci":  "Oryctolagus cuniculus",
+        "inat":  "Oryctolagus cuniculus",
+        "nomFr":  "Lapin de garenne",
+        "file":  "oryctolagus-cuniculus.jpg",
+        "licence":  "cc-by-nc",
+        "credit":  "(c) jitensha2021, some rights reserved (CC BY-NC)",
+        "source":  "https://www.inaturalist.org/photos/520690657"
+    },
+    {
+        "id":  "pipistrellus-pipistrellus",
+        "sci":  "Pipistrellus pipistrellus",
+        "inat":  "Pipistrellus pipistrellus",
+        "nomFr":  "Pipistrelle Commune",
+        "file":  "pipistrellus-pipistrellus.jpeg",
+        "licence":  "cc-by-nc",
+        "credit":  "(c) Jakob Fahr, some rights reserved (CC BY-NC), uploaded by Jakob Fahr",
+        "source":  "https://www.inaturalist.org/photos/6156906"
+    },
+    {
+        "id":  "martes-foina",
+        "sci":  "Martes foina",
+        "inat":  "Martes foina",
+        "nomFr":  "Fouine",
+        "file":  "martes-foina.jpg",
+        "licence":  "cc-by-nc-sa",
+        "credit":  "(c) janconl, some rights reserved (CC BY-NC-SA), uploaded by janconl",
+        "source":  "https://www.inaturalist.org/photos/161528563"
+    },
+    {
+        "id":  "talpa-europaea",
+        "sci":  "Talpa europaea",
+        "inat":  "Talpa europaea",
+        "nomFr":  "Taupe d\u0027Europe",
+        "file":  "talpa-europaea.jpg",
+        "licence":  "cc-by-nc-sa",
+        "credit":  "(c) Bogdan V. Kryzhatyuk, some rights reserved (CC BY-NC-SA), uploaded by Bogdan V. Kryzhatyuk",
+        "source":  "https://www.inaturalist.org/photos/79276172"
+    },
+    {
+        "id":  "apodemus-sylvaticus",
+        "sci":  "Apodemus sylvaticus",
+        "inat":  "Apodemus sylvaticus",
+        "nomFr":  "Mulot Sylvestre",
+        "file":  "apodemus-sylvaticus.jpeg",
+        "licence":  "cc-by-nc",
+        "credit":  "(c) naturpel, some rights reserved (CC BY-NC), uploaded by naturpel",
+        "source":  "https://www.inaturalist.org/photos/12424244"
+    },
+    {
+        "id":  "lutra-lutra",
+        "sci":  "Lutra lutra",
+        "inat":  "Lutra lutra",
+        "nomFr":  "Loutre d\u0027Europe",
+        "file":  "lutra-lutra.jpg",
+        "licence":  "cc-by-nc-sa",
+        "credit":  "(c) Tomi Tirkkonen, some rights reserved (CC BY-NC-SA)",
+        "source":  "https://www.inaturalist.org/photos/100389336"
+    },
+    {
+        "id":  "castor-fiber",
+        "sci":  "Castor fiber",
+        "inat":  "Castor fiber",
+        "nomFr":  "Castor d\u0027Eurasie",
+        "file":  "castor-fiber.jpg",
+        "licence":  "cc-by-nc",
+        "credit":  "(c) jamesbot, some rights reserved (CC BY-NC)",
+        "source":  "https://www.inaturalist.org/photos/262862372"
+    },
+    {
+        "id":  "marmota-marmota",
+        "sci":  "Marmota marmota",
+        "inat":  "Marmota marmota",
+        "nomFr":  "Marmotte des Alpes",
+        "file":  "marmota-marmota.jpg",
+        "licence":  "cc-by-nc",
+        "credit":  "(c) Boris Mittermeier, some rights reserved (CC BY-NC), uploaded by Boris Mittermeier",
+        "source":  "https://www.inaturalist.org/photos/281597745"
+    },
+    {
+        "id":  "rupicapra-rupicapra",
+        "sci":  "Rupicapra rupicapra",
+        "inat":  "Rupicapra rupicapra",
+        "nomFr":  "Chamois",
+        "file":  "rupicapra-rupicapra.jpg",
+        "licence":  "cc-by-sa",
+        "credit":  "(c) Giles Laurent, some rights reserved (CC BY-SA)",
+        "source":  "https://www.inaturalist.org/photos/456684191"
+    },
+    {
+        "id":  "capra-ibex",
+        "sci":  "Capra ibex",
+        "inat":  "Capra ibex",
+        "nomFr":  "Bouquetin des Alpes",
+        "file":  "capra-ibex.jpg",
+        "licence":  "cc-by-nc",
+        "credit":  "(c) Fabrizio Gottardi, some rights reserved (CC BY-NC), uploaded by Fabrizio Gottardi",
+        "source":  "https://www.inaturalist.org/photos/109112986"
+    },
+    {
+        "id":  "canis-lupus",
+        "sci":  "Canis lupus",
+        "inat":  "Canis lupus",
+        "nomFr":  "Loup gris",
+        "file":  "canis-lupus.jpg",
+        "licence":  "cc-by-nc",
+        "credit":  "(c) Brian Starzomski, some rights reserved (CC BY-NC), uploaded by Brian Starzomski",
+        "source":  "https://www.inaturalist.org/photos/43410580"
+    },
+    {
+        "id":  "felis-silvestris",
+        "sci":  "Felis silvestris",
+        "inat":  "Felis silvestris",
+        "nomFr":  "Chat sauvage d’Europe",
+        "file":  "felis-silvestris.jpg",
+        "licence":  "cc-by-nc",
+        "credit":  "(c) Javisa Hun, some rights reserved (CC BY-NC), uploaded by Javisa Hun",
+        "source":  "https://www.inaturalist.org/photos/40361708"
+    },
+    {
+        "id":  "genetta-genetta",
+        "sci":  "Genetta genetta",
+        "inat":  "Genetta genetta",
+        "nomFr":  "Genette commune",
+        "file":  "genetta-genetta.jpg",
+        "licence":  "cc-by-nc",
+        "credit":  "(c) Nik Borrow, some rights reserved (CC BY-NC)",
+        "source":  "https://www.inaturalist.org/photos/8220668"
+    },
+    {
+        "id":  "rhinolophus-ferrumequinum",
+        "sci":  "Rhinolophus ferrumequinum",
+        "inat":  "Rhinolophus ferrumequinum",
+        "nomFr":  "Grand rhinolophe",
+        "file":  "rhinolophus-ferrumequinum.jpg",
+        "licence":  "cc-by-nc",
+        "credit":  "(c) Arnold Wijker, some rights reserved (CC BY-NC), uploaded by Arnold Wijker",
+        "source":  "https://www.inaturalist.org/photos/108368812"
+    },
+    {
+        "id":  "phoca-vitulina",
+        "sci":  "Phoca vitulina",
+        "inat":  "Phoca vitulina",
+        "nomFr":  "Phoque veau-marin",
+        "file":  "phoca-vitulina.jpg",
+        "licence":  "cc-by-nc-nd",
+        "credit":  "(c) Andrew Reding, some rights reserved (CC BY-NC-ND)",
+        "source":  "https://www.inaturalist.org/photos/190781322"
+    },
+    {
+        "id":  "tursiops-truncatus",
+        "sci":  "Tursiops truncatus",
+        "inat":  "Tursiops truncatus",
+        "nomFr":  "Grand Dauphin",
+        "file":  "tursiops-truncatus.jpg",
+        "licence":  "cc-by-nc",
+        "credit":  "(c) Frank Krasovec, some rights reserved (CC BY-NC), uploaded by Frank Krasovec",
+        "source":  "https://www.inaturalist.org/photos/611231392"
+    },
+    {
+        "id":  "lynx-lynx",
+        "sci":  "Lynx lynx",
+        "inat":  "Oxyopidae",
+        "nomFr":  null,
+        "file":  "lynx-lynx.jpeg",
+        "licence":  "cc-by-nc",
+        "credit":  "(c) Dan Lee, some rights reserved (CC BY-NC), uploaded by Dan Lee",
+        "source":  "https://www.inaturalist.org/photos/126479456"
+    },
+    {
+        "id":  "ursus-arctos",
+        "sci":  "Ursus arctos",
+        "inat":  "Ursus arctos",
+        "nomFr":  "Ours brun",
+        "file":  "ursus-arctos.jpg",
+        "licence":  "cc-by-nc",
+        "credit":  "(c) Donna Pomeroy, some rights reserved (CC BY-NC), uploaded by Donna Pomeroy",
+        "source":  "https://www.inaturalist.org/photos/1491897"
+    },
+    {
+        "id":  "parus-major",
+        "sci":  "Parus major",
+        "inat":  "Parus major",
+        "nomFr":  "Mésange charbonnière",
+        "file":  "parus-major.jpg",
+        "licence":  "cc-by-nc",
+        "credit":  "(c) Oscar Valencoso - Salomé Planas, some rights reserved (CC BY-NC)",
+        "source":  "https://www.inaturalist.org/photos/340613122"
+    },
+    {
+        "id":  "cyanistes-caeruleus",
+        "sci":  "Cyanistes caeruleus",
+        "inat":  "Cyanistes caeruleus",
+        "nomFr":  "Mésange bleue",
+        "file":  "cyanistes-caeruleus.jpeg",
+        "licence":  "cc-by-nc",
+        "credit":  "(c) rorygardner79, some rights reserved (CC BY-NC)",
+        "source":  "https://www.inaturalist.org/photos/41677354"
+    },
+    {
+        "id":  "turdus-merula",
+        "sci":  "Turdus merula",
+        "inat":  "Turdus merula",
+        "nomFr":  "Merle noir",
+        "file":  "turdus-merula.jpg",
+        "licence":  "cc-by",
+        "credit":  "(c) Luiz Lapa, some rights reserved (CC BY)",
+        "source":  "https://www.inaturalist.org/photos/356885346"
+    },
+    {
+        "id":  "erithacus-rubecula",
+        "sci":  "Erithacus rubecula",
+        "inat":  "Erithacus rubecula",
+        "nomFr":  "Rougegorge familier",
+        "file":  "erithacus-rubecula.jpeg",
+        "licence":  "cc-by-nc",
+        "credit":  "(c) naturpel, some rights reserved (CC BY-NC), uploaded by naturpel",
+        "source":  "https://www.inaturalist.org/photos/104940884"
+    },
+    {
+        "id":  "passer-domesticus",
+        "sci":  "Passer domesticus",
+        "inat":  "Passer domesticus",
+        "nomFr":  "Moineau domestique",
+        "file":  "passer-domesticus.jpg",
+        "licence":  "cc-by-nc-sa",
+        "credit":  "(c) Ximo Galarza, some rights reserved (CC BY-NC-SA)",
+        "source":  "https://www.inaturalist.org/photos/4608133"
+    },
+    {
+        "id":  "columba-palumbus",
+        "sci":  "Columba palumbus",
+        "inat":  "Columba palumbus",
+        "nomFr":  "Pigeon ramier",
+        "file":  "columba-palumbus.jpg",
+        "licence":  "cc-by-sa",
+        "credit":  "(c) hedera.baltica, some rights reserved (CC BY-SA)",
+        "source":  "https://www.inaturalist.org/photos/108521205"
+    },
+    {
+        "id":  "streptopelia-decaocto",
+        "sci":  "Streptopelia decaocto",
+        "inat":  "Streptopelia decaocto",
+        "nomFr":  "Tourterelle turque",
+        "file":  "streptopelia-decaocto.jpg",
+        "licence":  "cc-by-nc",
+        "credit":  "(c) mattecasti, some rights reserved (CC BY-NC)",
+        "source":  "https://www.inaturalist.org/photos/100117501"
+    },
+    {
+        "id":  "pica-pica",
+        "sci":  "Pica pica",
+        "inat":  "Pica pica",
+        "nomFr":  "Pie bavarde",
+        "file":  "pica-pica.jpg",
+        "licence":  "cc-by-nc-sa",
+        "credit":  "(c) Agustín Povedano, some rights reserved (CC BY-NC-SA)",
+        "source":  "https://www.inaturalist.org/photos/103446096"
+    },
+    {
+        "id":  "corvus-corone",
+        "sci":  "Corvus corone",
+        "inat":  "Corvus corone",
+        "nomFr":  "Corneille noire",
+        "file":  "corvus-corone.jpg",
+        "licence":  "cc-by-nc",
+        "credit":  "(c) Eidiu, some rights reserved (CC BY-NC), uploaded by Eidiu",
+        "source":  "https://www.inaturalist.org/photos/451700759"
+    },
+    {
+        "id":  "sturnus-vulgaris",
+        "sci":  "Sturnus vulgaris",
+        "inat":  "Sturnus vulgaris",
+        "nomFr":  "Étourneau sansonnet",
+        "file":  "sturnus-vulgaris.jpg",
+        "licence":  "cc-by-nc-nd",
+        "credit":  "(c) Fran Wiesner, some rights reserved (CC BY-NC-ND), uploaded by Fran Wiesner",
+        "source":  "https://www.inaturalist.org/photos/32152001"
+    },
+    {
+        "id":  "fringilla-coelebs",
+        "sci":  "Fringilla coelebs",
+        "inat":  "Fringilla coelebs",
+        "nomFr":  "Pinson des arbres",
+        "file":  "fringilla-coelebs.jpg",
+        "licence":  "cc-by-nc",
+        "credit":  "(c) Jonny Andrews, some rights reserved (CC BY-NC), uploaded by Jonny Andrews",
+        "source":  "https://www.inaturalist.org/photos/151143058"
+    },
+    {
+        "id":  "phoenicurus-ochruros",
+        "sci":  "Phoenicurus ochruros",
+        "inat":  "Phoenicurus ochruros",
+        "nomFr":  "Rougequeue noir",
+        "file":  "phoenicurus-ochruros.jpg",
+        "licence":  "cc-by-nc",
+        "credit":  "(c) Paul Cools, some rights reserved (CC BY-NC), uploaded by Paul Cools",
+        "source":  "https://www.inaturalist.org/photos/3322604"
+    },
+    {
+        "id":  "sylvia-atricapilla",
+        "sci":  "Sylvia atricapilla",
+        "inat":  "Sylvia atricapilla",
+        "nomFr":  "Fauvette à tête noire",
+        "file":  "sylvia-atricapilla.jpg",
+        "licence":  "cc-by-nc",
+        "credit":  "(c) Marina Ribeiro, some rights reserved (CC BY-NC), uploaded by Marina Ribeiro",
+        "source":  "https://www.inaturalist.org/photos/187041112"
+    },
+    {
+        "id":  "hirundo-rustica",
+        "sci":  "Hirundo rustica",
+        "inat":  "Hirundo rustica",
+        "nomFr":  "Hirondelle rustique",
+        "file":  "hirundo-rustica.jpg",
+        "licence":  "cc-by-nc",
+        "credit":  "(c) Ad Konings, some rights reserved (CC BY-NC), uploaded by Ad Konings",
+        "source":  "https://www.inaturalist.org/photos/122469139"
+    },
+    {
+        "id":  "apus-apus",
+        "sci":  "Apus apus",
+        "inat":  "Apus apus",
+        "nomFr":  "Martinet noir",
+        "file":  "apus-apus.jpg",
+        "licence":  "cc-by-nc",
+        "credit":  "(c) Алексей Эбель, some rights reserved (CC BY-NC), uploaded by Алексей Эбель",
+        "source":  "https://www.inaturalist.org/photos/40612214"
+    },
+    {
+        "id":  "larus-argentatus",
+        "sci":  "Larus argentatus",
+        "inat":  "Larus argentatus",
+        "nomFr":  "Goéland argenté",
+        "file":  "larus-argentatus.jpeg",
+        "licence":  "cc-by-nc",
+        "credit":  "(c) Andrew Thompson, some rights reserved (CC BY-NC), uploaded by Andrew Thompson",
+        "source":  "https://www.inaturalist.org/photos/198439202"
+    },
+    {
+        "id":  "chroicocephalus-ridibundus",
+        "sci":  "Chroicocephalus ridibundus",
+        "inat":  "Chroicocephalus ridibundus",
+        "nomFr":  "Mouette rieuse",
+        "file":  "chroicocephalus-ridibundus.jpg",
+        "licence":  "cc-by-nc",
+        "credit":  "(c) Dmitry Dubikovskiy, some rights reserved (CC BY-NC), uploaded by Dmitry Dubikovskiy",
+        "source":  "https://www.inaturalist.org/photos/198109587"
+    },
+    {
+        "id":  "anas-platyrhynchos",
+        "sci":  "Anas platyrhynchos",
+        "inat":  "Anas platyrhynchos",
+        "nomFr":  "Canard colvert",
+        "file":  "anas-platyrhynchos.jpg",
+        "licence":  "cc-by-sa",
+        "credit":  "(c) anonymous, some rights reserved (CC BY-SA)",
+        "source":  "https://www.inaturalist.org/photos/95268822"
+    },
+    {
+        "id":  "phalacrocorax-carbo",
+        "sci":  "Phalacrocorax carbo",
+        "inat":  "Phalacrocorax carbo",
+        "nomFr":  "Grand Cormoran",
+        "file":  "phalacrocorax-carbo.jpg",
+        "licence":  "cc-by-nc",
+        "credit":  "(c) Дмитрий Осипов, some rights reserved (CC BY-NC), uploaded by Дмитрий Осипов",
+        "source":  "https://www.inaturalist.org/photos/141367445"
+    },
+    {
+        "id":  "ardea-cinerea",
+        "sci":  "Ardea cinerea",
+        "inat":  "Ardea cinerea",
+        "nomFr":  "Héron cendré",
+        "file":  "ardea-cinerea.jpg",
+        "licence":  "cc-by",
+        "credit":  "(c) Frank Sengpiel, some rights reserved (CC BY), uploaded by Frank Sengpiel",
+        "source":  "https://www.inaturalist.org/photos/73516715"
+    },
+    {
+        "id":  "cygnus-olor",
+        "sci":  "Cygnus olor",
+        "inat":  "Cygnus olor",
+        "nomFr":  "Cygne tuberculé",
+        "file":  "cygnus-olor.jpg",
+        "licence":  "cc-by-nc",
+        "credit":  "(c) missoulabirdnerd, some rights reserved (CC BY-NC), uploaded by missoulabirdnerd",
+        "source":  "https://www.inaturalist.org/photos/622245220"
+    },
+    {
+        "id":  "buteo-buteo",
+        "sci":  "Buteo buteo",
+        "inat":  "Buteo buteo",
+        "nomFr":  "Buse variable",
+        "file":  "buteo-buteo.jpg",
+        "licence":  "cc-by-nc",
+        "credit":  "(c) Manuel Raab, some rights reserved (CC BY-NC), uploaded by Manuel Raab",
+        "source":  "https://www.inaturalist.org/photos/457121231"
+    },
+    {
+        "id":  "falco-tinnunculus",
+        "sci":  "Falco tinnunculus",
+        "inat":  "Falco tinnunculus",
+        "nomFr":  "Faucon crécerelle",
+        "file":  "falco-tinnunculus.jpg",
+        "licence":  "cc-by-nc",
+        "credit":  "(c) Manuel Raab, some rights reserved (CC BY-NC), uploaded by Manuel Raab",
+        "source":  "https://www.inaturalist.org/photos/598044895"
+    },
+    {
+        "id":  "strix-aluco",
+        "sci":  "Strix aluco",
+        "inat":  "Strix aluco",
+        "nomFr":  "Chouette hulotte",
+        "file":  "strix-aluco.jpg",
+        "licence":  "cc-by",
+        "credit":  "(c) caroline legg, some rights reserved (CC BY)",
+        "source":  "https://www.inaturalist.org/photos/451350360"
+    },
+    {
+        "id":  "dendrocopos-major",
+        "sci":  "Dendrocopos major",
+        "inat":  "Dendrocopos major",
+        "nomFr":  "Pic épeiche",
+        "file":  "dendrocopos-major.jpeg",
+        "licence":  "cc-by-nc",
+        "credit":  "(c) Elio Giacone, some rights reserved (CC BY-NC), uploaded by Elio Giacone",
+        "source":  "https://www.inaturalist.org/photos/259132621"
+    },
+    {
+        "id":  "picus-viridis",
+        "sci":  "Picus viridis",
+        "inat":  "Picus viridis",
+        "nomFr":  "Pic vert",
+        "file":  "picus-viridis.jpg",
+        "licence":  "cc-by",
+        "credit":  "(c) Andrea Poggi, some rights reserved (CC BY), uploaded by Andrea Poggi",
+        "source":  "https://www.inaturalist.org/photos/242668015"
+    },
+    {
+        "id":  "garrulus-glandarius",
+        "sci":  "Garrulus glandarius",
+        "inat":  "Garrulus glandarius",
+        "nomFr":  "Geai des chênes",
+        "file":  "garrulus-glandarius.jpg",
+        "licence":  "cc-by-sa",
+        "credit":  "(c) Luc Viatour, some rights reserved (CC BY-SA)",
+        "source":  "https://www.inaturalist.org/photos/168146456"
+    },
+    {
+        "id":  "cuculus-canorus",
+        "sci":  "Cuculus canorus",
+        "inat":  "Cuculus canorus",
+        "nomFr":  "Coucou gris",
+        "file":  "cuculus-canorus.jpg",
+        "licence":  "cc-by-nc",
+        "credit":  "(c) Oleg, some rights reserved (CC BY-NC), uploaded by Oleg",
+        "source":  "https://www.inaturalist.org/photos/380547488"
+    },
+    {
+        "id":  "haematopus-ostralegus",
+        "sci":  "Haematopus ostralegus",
+        "inat":  "Haematopus ostralegus",
+        "nomFr":  "Huîtrier pie",
+        "file":  "haematopus-ostralegus.jpg",
+        "licence":  "cc-by-nc",
+        "credit":  "(c) Paul Cools, some rights reserved (CC BY-NC), uploaded by Paul Cools",
+        "source":  "https://www.inaturalist.org/photos/1940433"
+    },
+    {
+        "id":  "pyrrhocorax-graculus",
+        "sci":  "Pyrrhocorax graculus",
+        "inat":  "Pyrrhocorax graculus",
+        "nomFr":  "Chocard à bec jaune",
+        "file":  "pyrrhocorax-graculus.jpg",
+        "licence":  "cc-by-nc-nd",
+        "credit":  "(c) Marco Vicariotto, some rights reserved (CC BY-NC-ND), uploaded by Marco Vicariotto",
+        "source":  "https://www.inaturalist.org/photos/27354873"
+    },
+    {
+        "id":  "tyto-alba",
+        "sci":  "Tyto alba",
+        "inat":  "Tyto alba",
+        "nomFr":  "Effraie des Clochers",
+        "file":  "tyto-alba.jpg",
+        "licence":  "cc-by",
+        "credit":  "(c) caroline legg, some rights reserved (CC BY)",
+        "source":  "https://www.inaturalist.org/photos/165796939"
+    },
+    {
+        "id":  "alcedo-atthis",
+        "sci":  "Alcedo atthis",
+        "inat":  "Alcedo atthis",
+        "nomFr":  "Martin-pêcheur d\u0027Europe",
+        "file":  "alcedo-atthis.jpg",
+        "licence":  "cc-by-nc-sa",
+        "credit":  "(c) Mark Kilner, some rights reserved (CC BY-NC-SA)",
+        "source":  "https://www.inaturalist.org/photos/61266631"
+    },
+    {
+        "id":  "ciconia-ciconia",
+        "sci":  "Ciconia ciconia",
+        "inat":  "Ciconia ciconia",
+        "nomFr":  "Cigogne blanche",
+        "file":  "ciconia-ciconia.jpg",
+        "licence":  "cc-by-sa",
+        "credit":  "(c) xulescu_g, some rights reserved (CC BY-SA)",
+        "source":  "https://www.inaturalist.org/photos/269104502"
+    },
+    {
+        "id":  "upupa-epops",
+        "sci":  "Upupa epops",
+        "inat":  "Upupa epops",
+        "nomFr":  "Huppe fasciée",
+        "file":  "upupa-epops.jpg",
+        "licence":  "cc-by-nc-sa",
+        "credit":  "(c) Andrej Chudý, some rights reserved (CC BY-NC-SA)",
+        "source":  "https://www.inaturalist.org/photos/60494705"
+    },
+    {
+        "id":  "merops-apiaster",
+        "sci":  "Merops apiaster",
+        "inat":  "Merops apiaster",
+        "nomFr":  "Guêpier d\u0027Europe",
+        "file":  "merops-apiaster.jpeg",
+        "licence":  "cc-by-nc",
+        "credit":  "(c) brugorraiztelefonicanet, some rights reserved (CC BY-NC), uploaded by brugorraiztelefonicanet",
+        "source":  "https://www.inaturalist.org/photos/70043412"
+    },
+    {
+        "id":  "grus-grus",
+        "sci":  "Grus grus",
+        "inat":  "Grus grus",
+        "nomFr":  "Grue cendrée",
+        "file":  "grus-grus.jpg",
+        "licence":  "cc-by-nc-sa",
+        "credit":  "(c) Tarique Sani, some rights reserved (CC BY-NC-SA)",
+        "source":  "https://www.inaturalist.org/photos/13745"
+    },
+    {
+        "id":  "phoenicopterus-roseus",
+        "sci":  "Phoenicopterus roseus",
+        "inat":  "Phoenicopterus roseus",
+        "nomFr":  "Flamant rose",
+        "file":  "phoenicopterus-roseus.jpg",
+        "licence":  "cc-by-nc",
+        "credit":  "(c) cog2022, some rights reserved (CC BY-NC)",
+        "source":  "https://www.inaturalist.org/photos/187242272"
+    },
+    {
+        "id":  "morus-bassanus",
+        "sci":  "Morus bassanus",
+        "inat":  "Morus bassanus",
+        "nomFr":  "Fou de bassan",
+        "file":  "morus-bassanus.jpg",
+        "licence":  "cc-by-nc-sa",
+        "credit":  "(c) PÃ©tur Gauti Valgeirsson, some rights reserved (CC BY-NC-SA)",
+        "source":  "https://www.inaturalist.org/photos/8811"
+    },
+    {
+        "id":  "caprimulgus-europaeus",
+        "sci":  "Caprimulgus europaeus",
+        "inat":  "Caprimulgus europaeus",
+        "nomFr":  "Engoulevent d\u0027Europe",
+        "file":  "caprimulgus-europaeus.jpg",
+        "licence":  "cc-by-nc-sa",
+        "credit":  "(c) Andrej Chudý, some rights reserved (CC BY-NC-SA)",
+        "source":  "https://www.inaturalist.org/photos/1594673"
+    },
+    {
+        "id":  "bubo-bubo",
+        "sci":  "Bubo bubo",
+        "inat":  "Bubo",
+        "nomFr":  "Grands-ducs et harfang des neiges",
+        "file":  "bubo-bubo.jpg",
+        "licence":  "cc-by-nc",
+        "credit":  "(c) Michael Lynch, some rights reserved (CC BY-NC), uploaded by Michael Lynch",
+        "source":  "https://www.inaturalist.org/photos/241295673"
+    },
+    {
+        "id":  "aquila-chrysaetos",
+        "sci":  "Aquila chrysaetos",
+        "inat":  "Aquila chrysaetos",
+        "nomFr":  "Aigle royal",
+        "file":  "aquila-chrysaetos.jpg",
+        "licence":  "cc-by-nc",
+        "credit":  "(c) Jef-B, some rights reserved (CC BY-NC), uploaded by Jef-B",
+        "source":  "https://www.inaturalist.org/photos/465326450"
+    },
+    {
+        "id":  "tichodroma-muraria",
+        "sci":  "Tichodroma muraria",
+        "inat":  "Tichodroma muraria",
+        "nomFr":  "Tichodrome échelette",
+        "file":  "tichodroma-muraria.jpeg",
+        "licence":  "cc-by",
+        "credit":  "(c) Christoph Moning, some rights reserved (CC BY), uploaded by Christoph Moning",
+        "source":  "https://www.inaturalist.org/photos/104722245"
+    },
+    {
+        "id":  "fratercula-arctica",
+        "sci":  "Fratercula arctica",
+        "inat":  "Fratercula arctica",
+        "nomFr":  "Macareux moine",
+        "file":  "fratercula-arctica.jpg",
+        "licence":  "cc-by-nc",
+        "credit":  "(c) Paul Steeves, some rights reserved (CC BY-NC), uploaded by Paul Steeves",
+        "source":  "https://www.inaturalist.org/photos/63139388"
+    },
+    {
+        "id":  "gypaetus-barbatus",
+        "sci":  "Gypaetus barbatus",
+        "inat":  "Gypaetus barbatus",
+        "nomFr":  "Gypaète barbu",
+        "file":  "gypaetus-barbatus.jpg",
+        "licence":  "cc-by-nc",
+        "credit":  "(c) petermcintyre, some rights reserved (CC BY-NC)",
+        "source":  "https://www.inaturalist.org/photos/277408147"
+    },
+    {
+        "id":  "podarcis-muralis",
+        "sci":  "Podarcis muralis",
+        "inat":  "Podarcis muralis",
+        "nomFr":  "Lézard des murailles",
+        "file":  "podarcis-muralis.jpg",
+        "licence":  "cc-by-nc-nd",
+        "credit":  "(c) Leon van der Noll, some rights reserved (CC BY-NC-ND)",
+        "source":  "https://www.inaturalist.org/photos/129028289"
+    },
+    {
+        "id":  "lacerta-bilineata",
+        "sci":  "Lacerta bilineata",
+        "inat":  "Lacerta bilineata",
+        "nomFr":  "Lézard vert occidental",
+        "file":  "lacerta-bilineata.jpeg",
+        "licence":  "cc-by-nc",
+        "credit":  "(c) frankielee91, some rights reserved (CC BY-NC), uploaded by frankielee91",
+        "source":  "https://www.inaturalist.org/photos/393936915"
+    },
+    {
+        "id":  "anguis-fragilis",
+        "sci":  "Anguis fragilis",
+        "inat":  "Anguis fragilis",
+        "nomFr":  "Orvet fragile",
+        "file":  "anguis-fragilis.jpeg",
+        "licence":  "cc-by-nc",
+        "credit":  "(c) royc614, some rights reserved (CC BY-NC), uploaded by royc614",
+        "source":  "https://www.inaturalist.org/photos/85497911"
+    },
+    {
+        "id":  "natrix-helvetica",
+        "sci":  "Natrix helvetica",
+        "inat":  "Natrix helvetica",
+        "nomFr":  "Couleuvre helvétique",
+        "file":  "natrix-helvetica.jpeg",
+        "licence":  "cc-by-nc",
+        "credit":  "(c) Shreybae, some rights reserved (CC BY-NC), uploaded by Shreybae",
+        "source":  "https://www.inaturalist.org/photos/404696767"
+    },
+    {
+        "id":  "hierophis-viridiflavus",
+        "sci":  "Hierophis viridiflavus",
+        "inat":  "Hierophis viridiflavus",
+        "nomFr":  "Couleuvre verte et jaune",
+        "file":  "hierophis-viridiflavus.jpg",
+        "licence":  "cc-by-nc",
+        "credit":  "(c) Paolo Mazzei, some rights reserved (CC BY-NC), uploaded by Paolo Mazzei",
+        "source":  "https://www.inaturalist.org/photos/30826696"
+    },
+    {
+        "id":  "vipera-aspis",
+        "sci":  "Vipera aspis",
+        "inat":  "Vipera aspis",
+        "nomFr":  "Vipère aspic",
+        "file":  "vipera-aspis.jpg",
+        "licence":  "cc-by-nc",
+        "credit":  "(c) Aloys PICHARD, some rights reserved (CC BY-NC), uploaded by Aloys PICHARD",
+        "source":  "https://www.inaturalist.org/photos/236263445"
+    },
+    {
+        "id":  "emys-orbicularis",
+        "sci":  "Emys orbicularis",
+        "inat":  "Emys orbicularis",
+        "nomFr":  "Cistude d\u0027Europe",
+        "file":  "emys-orbicularis.jpeg",
+        "licence":  "cc-by-nc",
+        "credit":  "(c) Laurent Barthe, some rights reserved (CC BY-NC), uploaded by Laurent Barthe",
+        "source":  "https://www.inaturalist.org/photos/230597692"
+    },
+    {
+        "id":  "testudo-hermanni",
+        "sci":  "Testudo hermanni",
+        "inat":  "Testudo hermanni",
+        "nomFr":  "Tortue d\u0027Hermann",
+        "file":  "testudo-hermanni.jpg",
+        "licence":  "cc-by-nc-sa",
+        "credit":  "(c) Roberto Sindaco, some rights reserved (CC BY-NC-SA), uploaded by Roberto Sindaco",
+        "source":  "https://www.inaturalist.org/photos/669249"
+    },
+    {
+        "id":  "bufo-bufo",
+        "sci":  "Bufo bufo",
+        "inat":  "Bufo bufo",
+        "nomFr":  "Crapaud commun",
+        "file":  "bufo-bufo.jpg",
+        "licence":  "cc-by-nc",
+        "credit":  "(c) Manuel Raab, some rights reserved (CC BY-NC), uploaded by Manuel Raab",
+        "source":  "https://www.inaturalist.org/photos/410732465"
+    },
+    {
+        "id":  "pelophylax-kl-esculentus",
+        "sci":  "Pelophylax kl. esculentus",
+        "inat":  "Pelophylax esculentus",
+        "nomFr":  "Grenouille verte européenne",
+        "file":  "pelophylax-kl-esculentus.jpg",
+        "licence":  "cc-by",
+        "credit":  "(c) Luciano 95, some rights reserved (CC BY)",
+        "source":  "https://www.inaturalist.org/photos/1958664"
+    },
+    {
+        "id":  "rana-temporaria",
+        "sci":  "Rana temporaria",
+        "inat":  "Rana temporaria",
+        "nomFr":  "Grenouille rousse",
+        "file":  "rana-temporaria.jpg",
+        "licence":  "cc-by-sa",
+        "credit":  "(c) Jörg Hempel, some rights reserved (CC BY-SA)",
+        "source":  "https://www.inaturalist.org/photos/171173"
+    },
+    {
+        "id":  "salamandra-salamandra",
+        "sci":  "Salamandra salamandra",
+        "inat":  "Salamandra salamandra",
+        "nomFr":  "Salamandre tachetée",
+        "file":  "salamandra-salamandra.jpg",
+        "licence":  "cc-by",
+        "credit":  "(c) Frank Vassen, some rights reserved (CC BY)",
+        "source":  "https://www.inaturalist.org/photos/159805189"
+    },
+    {
+        "id":  "hyla-arborea",
+        "sci":  "Hyla arborea",
+        "inat":  "Hyla arborea",
+        "nomFr":  "Rainette verte",
+        "file":  "hyla-arborea.jpg",
+        "licence":  "cc-by-nc",
+        "credit":  "(c) Manuel Raab, some rights reserved (CC BY-NC), uploaded by Manuel Raab",
+        "source":  "https://www.inaturalist.org/photos/393831666"
+    },
+    {
+        "id":  "epidalea-calamita",
+        "sci":  "Epidalea calamita",
+        "inat":  "Epidalea calamita",
+        "nomFr":  "Calamite des joncs",
+        "file":  "epidalea-calamita.jpg",
+        "licence":  "cc-by-nc",
+        "credit":  "(c) Tânia Araújo, some rights reserved (CC BY-NC), uploaded by Tânia Araújo",
+        "source":  "https://www.inaturalist.org/photos/55163594"
+    },
+    {
+        "id":  "triturus-cristatus",
+        "sci":  "Triturus cristatus",
+        "inat":  "Triturus cristatus",
+        "nomFr":  null,
+        "file":  "triturus-cristatus.jpg",
+        "licence":  "cc-by-nc",
+        "credit":  "(c) RICCARDO MATTEA, some rights reserved (CC BY-NC), uploaded by RICCARDO MATTEA",
+        "source":  "https://www.inaturalist.org/photos/285159025"
+    },
+    {
+        "id":  "cyprinus-carpio",
+        "sci":  "Cyprinus carpio",
+        "inat":  "Cyprinus carpio",
+        "nomFr":  "Carpe commune",
+        "file":  "cyprinus-carpio.jpg",
+        "licence":  "cc-by-nc",
+        "credit":  "(c) lonnyholmes, some rights reserved (CC BY-NC), uploaded by lonnyholmes",
+        "source":  "https://www.inaturalist.org/photos/2754663"
+    },
+    {
+        "id":  "perca-fluviatilis",
+        "sci":  "Perca fluviatilis",
+        "inat":  "Perca fluviatilis",
+        "nomFr":  "Perche commune",
+        "file":  "perca-fluviatilis.jpg",
+        "licence":  "cc-by-sa",
+        "credit":  "(c) Gilles San Martin, some rights reserved (CC BY-SA)",
+        "source":  "https://www.inaturalist.org/photos/194421912"
+    },
+    {
+        "id":  "esox-lucius",
+        "sci":  "Esox lucius",
+        "inat":  "Esox lucius",
+        "nomFr":  "Grand brochet",
+        "file":  "esox-lucius.jpg",
+        "licence":  "cc-by-nc",
+        "credit":  "(c) Frédéric ANDRE, some rights reserved (CC BY-NC), uploaded by Frédéric ANDRE",
+        "source":  "https://www.inaturalist.org/photos/720194889"
+    },
+    {
+        "id":  "salmo-trutta",
+        "sci":  "Salmo trutta",
+        "inat":  "Salmo trutta",
+        "nomFr":  "Truite commune européenne",
+        "file":  "salmo-trutta.jpg",
+        "licence":  "cc-by",
+        "credit":  "(c) kirk gardner, some rights reserved (CC BY), uploaded by kirk gardner",
+        "source":  "https://www.inaturalist.org/photos/34847723"
+    },
+    {
+        "id":  "silurus-glanis",
+        "sci":  "Silurus glanis",
+        "inat":  "Silurus glanis",
+        "nomFr":  "Silure glane",
+        "file":  "silurus-glanis.jpg",
+        "licence":  "cc-by-nc",
+        "credit":  "(c) Manuel Raab, some rights reserved (CC BY-NC), uploaded by Manuel Raab",
+        "source":  "https://www.inaturalist.org/photos/215559806"
+    },
+    {
+        "id":  "salmo-salar",
+        "sci":  "Salmo salar",
+        "inat":  "Salmo salar",
+        "nomFr":  "Saumon atlantique",
+        "file":  "salmo-salar.jpg",
+        "licence":  "cc-by-nc",
+        "credit":  "(c) stproc, some rights reserved (CC BY-NC)",
+        "source":  "https://www.inaturalist.org/photos/178009492"
+    },
+    {
+        "id":  "hippocampus-guttulatus",
+        "sci":  "Hippocampus guttulatus",
+        "inat":  "Hippocampus guttulatus",
+        "nomFr":  "Hippocampe moucheté",
+        "file":  "hippocampus-guttulatus.jpeg",
+        "licence":  "cc-by-nc",
+        "credit":  "(c) Sylvain Le Bris, some rights reserved (CC BY-NC), uploaded by Sylvain Le Bris",
+        "source":  "https://www.inaturalist.org/photos/154810988"
+    },
+    {
+        "id":  "apis-mellifera",
+        "sci":  "Apis mellifera",
+        "inat":  "Apis mellifera",
+        "nomFr":  "Abeille domestique",
+        "file":  "apis-mellifera.jpeg",
+        "licence":  "cc-by-nc",
+        "credit":  "(c) Lê Thanh Hoa, some rights reserved (CC BY-NC), uploaded by Lê Thanh Hoa",
+        "source":  "https://www.inaturalist.org/photos/389898647"
+    },
+    {
+        "id":  "bombus-terrestris",
+        "sci":  "Bombus terrestris",
+        "inat":  "Bombus terrestris",
+        "nomFr":  "Bourdon terrestre",
+        "file":  "bombus-terrestris.jpg",
+        "licence":  "cc-by-nc",
+        "credit":  "(c) Thijs Valkenburg, some rights reserved (CC BY-NC), uploaded by Thijs Valkenburg",
+        "source":  "https://www.inaturalist.org/photos/346252775"
+    },
+    {
+        "id":  "coccinella-septempunctata",
+        "sci":  "Coccinella septempunctata",
+        "inat":  "Coccinella septempunctata",
+        "nomFr":  "Coccinelle à sept points",
+        "file":  "coccinella-septempunctata.jpg",
+        "licence":  "cc-by-nc",
+        "credit":  "(c) Thomas Shahan, some rights reserved (CC BY-NC), uploaded by Thomas Shahan",
+        "source":  "https://www.inaturalist.org/photos/267168450"
+    },
+    {
+        "id":  "aglais-io",
+        "sci":  "Aglais io",
+        "inat":  "Aglais io",
+        "nomFr":  "Paon-du-jour",
+        "file":  "aglais-io.jpg",
+        "licence":  "cc-by",
+        "credit":  "(c) S. Rae, some rights reserved (CC BY)",
+        "source":  "https://www.inaturalist.org/photos/4710619"
+    },
+    {
+        "id":  "vanessa-atalanta",
+        "sci":  "Vanessa atalanta",
+        "inat":  "Vanessa atalanta",
+        "nomFr":  "Vulcain",
+        "file":  "vanessa-atalanta.jpg",
+        "licence":  "cc-by-sa",
+        "credit":  "(c) Gilles San Martin, some rights reserved (CC BY-SA), uploaded by Gilles San Martin",
+        "source":  "https://www.inaturalist.org/photos/53928483"
+    },
+    {
+        "id":  "pyrrhocoris-apterus",
+        "sci":  "Pyrrhocoris apterus",
+        "inat":  "Pyrrhocoris apterus",
+        "nomFr":  "Gendarme",
+        "file":  "pyrrhocoris-apterus.jpg",
+        "licence":  "cc-by-nc-nd",
+        "credit":  "(c) Boris Loboda, some rights reserved (CC BY-NC-ND)",
+        "source":  "https://www.inaturalist.org/photos/3933544"
+    },
+    {
+        "id":  "papilio-machaon",
+        "sci":  "Papilio machaon",
+        "inat":  "Papilio machaon",
+        "nomFr":  "Machaon",
+        "file":  "papilio-machaon.jpg",
+        "licence":  "cc-by-nc",
+        "credit":  "(c) Martin Grimm, some rights reserved (CC BY-NC), uploaded by Martin Grimm",
+        "source":  "https://www.inaturalist.org/photos/84864834"
+    },
+    {
+        "id":  "macroglossum-stellatarum",
+        "sci":  "Macroglossum stellatarum",
+        "inat":  "Macroglossum stellatarum",
+        "nomFr":  "Moro-sphinx",
+        "file":  "macroglossum-stellatarum.jpg",
+        "licence":  "cc-by-nc-nd",
+        "credit":  "(c) David Denicolò, some rights reserved (CC BY-NC-ND)",
+        "source":  "https://www.inaturalist.org/photos/103024389"
+    },
+    {
+        "id":  "vespa-crabro",
+        "sci":  "Vespa crabro",
+        "inat":  "Vespa crabro",
+        "nomFr":  "Frelon européen",
+        "file":  "vespa-crabro.jpeg",
+        "licence":  "cc-by-nc",
+        "credit":  "(c) Jakob Fahr, some rights reserved (CC BY-NC), uploaded by Jakob Fahr",
+        "source":  "https://www.inaturalist.org/photos/18078852"
+    },
+    {
+        "id":  "tettigonia-viridissima",
+        "sci":  "Tettigonia viridissima",
+        "inat":  "Tettigonia viridissima",
+        "nomFr":  "Grande sauterelle verte",
+        "file":  "tettigonia-viridissima.jpeg",
+        "licence":  "cc-by-nc",
+        "credit":  "(c) Martin Galli, some rights reserved (CC BY-NC), uploaded by Martin Galli",
+        "source":  "https://www.inaturalist.org/photos/89411485"
+    },
+    {
+        "id":  "libellula-depressa",
+        "sci":  "Libellula depressa",
+        "inat":  "Libellula depressa",
+        "nomFr":  "Libellule déprimée",
+        "file":  "libellula-depressa.jpg",
+        "licence":  "cc-by",
+        "credit":  "(c) Thomas Bresson, some rights reserved (CC BY)",
+        "source":  "https://www.inaturalist.org/photos/16473"
+    },
+    {
+        "id":  "calopteryx-splendens",
+        "sci":  "Calopteryx splendens",
+        "inat":  "Calopteryx splendens",
+        "nomFr":  "Caloptéryx éclatant",
+        "file":  "calopteryx-splendens.jpeg",
+        "licence":  "cc-by-nc",
+        "credit":  "(c) bsteer, some rights reserved (CC BY-NC), uploaded by bsteer",
+        "source":  "https://www.inaturalist.org/photos/351222487"
+    },
+    {
+        "id":  "cetonia-aurata",
+        "sci":  "Cetonia aurata",
+        "inat":  "Cetonia aurata",
+        "nomFr":  "Cétoine dorée",
+        "file":  "cetonia-aurata.jpeg",
+        "licence":  "cc-by-nc",
+        "credit":  "(c) Izabella Farr, some rights reserved (CC BY-NC), uploaded by Izabella Farr",
+        "source":  "https://www.inaturalist.org/photos/141237136"
+    },
+    {
+        "id":  "lucanus-cervus",
+        "sci":  "Lucanus cervus",
+        "inat":  "Lucanus cervus",
+        "nomFr":  "Lucane cerf-volant",
+        "file":  "lucanus-cervus.jpg",
+        "licence":  "cc-by",
+        "credit":  "(c) Diego González Dopico, some rights reserved (CC BY), uploaded by Diego González Dopico",
+        "source":  "https://www.inaturalist.org/photos/691121156"
+    },
+    {
+        "id":  "mantis-religiosa",
+        "sci":  "Mantis religiosa",
+        "inat":  "Mantis religiosa",
+        "nomFr":  "Mante religieuse",
+        "file":  "mantis-religiosa.jpg",
+        "licence":  "cc-by-nc",
+        "credit":  "(c) Ryszard, some rights reserved (CC BY-NC)",
+        "source":  "https://www.inaturalist.org/photos/180063407"
+    },
+    {
+        "id":  "lampyris-noctiluca",
+        "sci":  "Lampyris noctiluca",
+        "inat":  "Lampyris noctiluca",
+        "nomFr":  "Ver luisant commun",
+        "file":  "lampyris-noctiluca.jpg",
+        "licence":  "cc-by-nc",
+        "credit":  "(c) Mark, some rights reserved (CC BY-NC), uploaded by Mark",
+        "source":  "https://www.inaturalist.org/photos/1674903"
+    },
+    {
+        "id":  "lyristes-plebejus",
+        "sci":  "Lyristes plebejus",
+        "inat":  "Lyristes plebejus",
+        "nomFr":  "Cigale plébéienne",
+        "file":  "lyristes-plebejus.jpg",
+        "licence":  "cc-by-nc-nd",
+        "credit":  "(c) Ralph Martin, some rights reserved (CC BY-NC-ND), uploaded by Ralph Martin",
+        "source":  "https://www.inaturalist.org/photos/51431721"
+    },
+    {
+        "id":  "saturnia-pyri",
+        "sci":  "Saturnia pyri",
+        "inat":  "Saturnia pyri",
+        "nomFr":  "Grand paon de nuit",
+        "file":  "saturnia-pyri.jpg",
+        "licence":  "cc-by-nc",
+        "credit":  "(c) Paul Cools, some rights reserved (CC BY-NC), uploaded by Paul Cools",
+        "source":  "https://www.inaturalist.org/photos/1843323"
+    },
+    {
+        "id":  "rosalia-alpina",
+        "sci":  "Rosalia alpina",
+        "inat":  "Rosalia alpina",
+        "nomFr":  "Rosalie des Alpes",
+        "file":  "rosalia-alpina.jpeg",
+        "licence":  "cc-by-nc",
+        "credit":  "(c) Jakob Fahr, some rights reserved (CC BY-NC), uploaded by Jakob Fahr",
+        "source":  "https://www.inaturalist.org/photos/62615492"
+    },
+    {
+        "id":  "parnassius-apollo",
+        "sci":  "Parnassius apollo",
+        "inat":  "Parnassius apollo",
+        "nomFr":  "Apollon",
+        "file":  "parnassius-apollo.jpg",
+        "licence":  "cc-by-nc",
+        "credit":  "(c) Tatyana Zarubo, some rights reserved (CC BY-NC), uploaded by Tatyana Zarubo",
+        "source":  "https://www.inaturalist.org/photos/62511210"
+    },
+    {
+        "id":  "araneus-diadematus",
+        "sci":  "Araneus diadematus",
+        "inat":  "Araneus diadematus",
+        "nomFr":  "Épeire diadème",
+        "file":  "araneus-diadematus.jpg",
+        "licence":  "cc-by-sa",
+        "credit":  "(c) hedera.baltica, some rights reserved (CC BY-SA)",
+        "source":  "https://www.inaturalist.org/photos/156036389"
+    },
+    {
+        "id":  "eratigena-atrica",
+        "sci":  "Eratigena atrica",
+        "inat":  "Eratigena atrica",
+        "nomFr":  null,
+        "file":  "eratigena-atrica.jpeg",
+        "licence":  "cc-by",
+        "credit":  "(c) Ludivine Lamare, some rights reserved (CC BY), uploaded by Ludivine Lamare",
+        "source":  "https://www.inaturalist.org/photos/312878028"
+    },
+    {
+        "id":  "argiope-bruennichi",
+        "sci":  "Argiope bruennichi",
+        "inat":  "Argiope bruennichi",
+        "nomFr":  "Argiope frelon",
+        "file":  "argiope-bruennichi.jpg",
+        "licence":  "cc-by-nc",
+        "credit":  "(c) Ouwesok, some rights reserved (CC BY-NC)",
+        "source":  "https://www.inaturalist.org/photos/119144638"
+    },
+    {
+        "id":  "misumena-vatia",
+        "sci":  "Misumena vatia",
+        "inat":  "Misumena vatia",
+        "nomFr":  "Misumène variable",
+        "file":  "misumena-vatia.jpeg",
+        "licence":  "cc-by-nc",
+        "credit":  "(c) Robby Deans, some rights reserved (CC BY-NC), uploaded by Robby Deans",
+        "source":  "https://www.inaturalist.org/photos/42263061"
+    },
+    {
+        "id":  "buthus-occitanus",
+        "sci":  "Buthus occitanus",
+        "inat":  "Buthus occitanus",
+        "nomFr":  "Scorpion languedocien",
+        "file":  "buthus-occitanus.jpeg",
+        "licence":  "cc-by-nc",
+        "credit":  "(c) Javier A. Canteros, some rights reserved (CC BY-NC), uploaded by Javier A. Canteros",
+        "source":  "https://www.inaturalist.org/photos/85530088"
+    },
+    {
+        "id":  "cornu-aspersum",
+        "sci":  "Cornu aspersum",
+        "inat":  "Cornu aspersum",
+        "nomFr":  "Petit-gris",
+        "file":  "cornu-aspersum.jpg",
+        "licence":  "cc-by-nc-sa",
+        "credit":  "(c) Ferran Turmo Gort, some rights reserved (CC BY-NC-SA)",
+        "source":  "https://www.inaturalist.org/photos/16302570"
+    },
+    {
+        "id":  "lumbricus-terrestris",
+        "sci":  "Lumbricus terrestris",
+        "inat":  "Lumbricus terrestris",
+        "nomFr":  "Ver de terre commun",
+        "file":  "lumbricus-terrestris.jpeg",
+        "licence":  "cc-by",
+        "credit":  "(c) alicia penney, some rights reserved (CC BY), uploaded by alicia penney",
+        "source":  "https://www.inaturalist.org/photos/369071390"
+    },
+    {
+        "id":  "helix-pomatia",
+        "sci":  "Helix pomatia",
+        "inat":  "Helix pomatia",
+        "nomFr":  "Escargot de Bourgogne",
+        "file":  "helix-pomatia.jpg",
+        "licence":  "cc-by-sa",
+        "credit":  "(c) Björn S..., some rights reserved (CC BY-SA)",
+        "source":  "https://www.inaturalist.org/photos/2536439"
+    },
+    {
+        "id":  "asterias-rubens",
+        "sci":  "Asterias rubens",
+        "inat":  "Asterias rubens",
+        "nomFr":  "Étoile de mer commune",
+        "file":  "asterias-rubens.jpg",
+        "licence":  "cc-by-nc-sa",
+        "credit":  "(c) Alexander Semenov, some rights reserved (CC BY-NC-SA)",
+        "source":  "https://www.inaturalist.org/photos/486710101"
+    },
+    {
+        "id":  "rhizostoma-pulmo",
+        "sci":  "Rhizostoma pulmo",
+        "inat":  "Rhizostoma pulmo",
+        "nomFr":  "Rhizostome de Méditerranée",
+        "file":  "rhizostoma-pulmo.jpeg",
+        "licence":  "cc-by-nc",
+        "credit":  "(c) xavi salvador costa, some rights reserved (CC BY-NC), uploaded by xavi salvador costa",
+        "source":  "https://www.inaturalist.org/photos/189393640"
+    },
+    {
+        "id":  "octopus-vulgaris",
+        "sci":  "Octopus vulgaris",
+        "inat":  "Octopus vulgaris",
+        "nomFr":  "Poulpe commun",
+        "file":  "octopus-vulgaris.jpeg",
+        "licence":  "cc-by-nc-nd",
+        "credit":  "(c) Susanne Spindler, some rights reserved (CC BY-NC-ND), uploaded by Susanne Spindler",
+        "source":  "https://www.inaturalist.org/photos/166419253"
+    },
+    {
+        "id":  "homarus-gammarus",
+        "sci":  "Homarus gammarus",
+        "inat":  "Homarus gammarus",
+        "nomFr":  "Homard européen",
+        "file":  "homarus-gammarus.jpeg",
+        "licence":  "cc-by-nc",
+        "credit":  "(c) luismartinezartola, some rights reserved (CC BY-NC)",
+        "source":  "https://www.inaturalist.org/photos/88240797"
+    },
+    {
+        "id":  "myocastor-coypus",
+        "sci":  "Myocastor coypus",
+        "inat":  "Myocastor coypus",
+        "nomFr":  "Ragondin",
+        "file":  "myocastor-coypus.jpg",
+        "licence":  "cc-by-nc",
+        "credit":  "(c) ctumer, some rights reserved (CC BY-NC), uploaded by ctumer",
+        "source":  "https://www.inaturalist.org/photos/349974188"
+    },
+    {
+        "id":  "periparus-ater",
+        "sci":  "Periparus ater",
+        "inat":  "Periparus ater",
+        "nomFr":  "Mésange noire",
+        "file":  "periparus-ater.jpg",
+        "licence":  "cc-by",
+        "credit":  "(c) Luiz Lapa, some rights reserved (CC BY)",
+        "source":  "https://www.inaturalist.org/photos/436734934"
+    },
+    {
+        "id":  "corvus-corax",
+        "sci":  "Corvus corax",
+        "inat":  "Corvus corax",
+        "nomFr":  "Grand Corbeau",
+        "file":  "corvus-corax.jpg",
+        "licence":  "cc-by-nc-sa",
+        "credit":  "(c) arbyreed, some rights reserved (CC BY-NC-SA)",
+        "source":  "https://www.inaturalist.org/photos/54389687"
+    },
+    {
+        "id":  "prunella-collaris",
+        "sci":  "Prunella collaris",
+        "inat":  "Prunella collaris",
+        "nomFr":  "Accenteur alpin",
+        "file":  "prunella-collaris.jpg",
+        "licence":  "cc-by-nc",
+        "credit":  "(c) Alessandro, some rights reserved (CC BY-NC), uploaded by Alessandro",
+        "source":  "https://www.inaturalist.org/photos/59007262"
+    },
+    {
+        "id":  "asio-otus",
+        "sci":  "Asio otus",
+        "inat":  "Asio otus",
+        "nomFr":  "Hibou moyen-duc",
+        "file":  "asio-otus.jpg",
+        "licence":  "cc-by",
+        "credit":  "(c) caroline legg, some rights reserved (CC BY)",
+        "source":  "https://www.inaturalist.org/photos/133553640"
+    },
+    {
+        "id":  "culex-pipiens",
+        "sci":  "Culex pipiens",
+        "inat":  "Culex pipiens",
+        "nomFr":  null,
+        "file":  "culex-pipiens.jpg",
+        "licence":  "cc-by-nc",
+        "credit":  "(c) Martin Galli, some rights reserved (CC BY-NC), uploaded by Martin Galli",
+        "source":  "https://www.inaturalist.org/photos/330756058"
+    },
+    {
+        "id":  "gerris-lacustris",
+        "sci":  "Gerris lacustris",
+        "inat":  "Gerris lacustris",
+        "nomFr":  "Gerris lacustre",
+        "file":  "gerris-lacustris.jpg",
+        "licence":  "cc-by-nc",
+        "credit":  "(c) Barış Çerçi, some rights reserved (CC BY-NC), uploaded by Barış Çerçi",
+        "source":  "https://www.inaturalist.org/photos/235290162"
+    },
+    {
+        "id":  "carcinus-maenas",
+        "sci":  "Carcinus maenas",
+        "inat":  "Carcinus maenas",
+        "nomFr":  "Crabe vert",
+        "file":  "carcinus-maenas.jpg",
+        "licence":  "cc-by-nc",
+        "credit":  "(c) Ondřej Radosta, some rights reserved (CC BY-NC), uploaded by Ondřej Radosta",
+        "source":  "https://www.inaturalist.org/photos/6015089"
+    },
+    {
+        "id":  "crangon-crangon",
+        "sci":  "Crangon crangon",
+        "inat":  "Crangon crangon",
+        "nomFr":  "Crevette grise européenne",
+        "file":  "crangon-crangon.jpeg",
+        "licence":  "cc-by-nc",
+        "credit":  "(c) Frédéric ANDRE, some rights reserved (CC BY-NC), uploaded by Frédéric ANDRE",
+        "source":  "https://www.inaturalist.org/photos/315874081"
+    },
+    {
+        "id":  "littorina-littorea",
+        "sci":  "Littorina littorea",
+        "inat":  "Littorina littorea",
+        "nomFr":  "Bigorneau",
+        "file":  "littorina-littorea.jpg",
+        "licence":  "cc-by-nc",
+        "credit":  "(c) Robin Gwen Agarwal, some rights reserved (CC BY-NC), uploaded by Robin Gwen Agarwal",
+        "source":  "https://www.inaturalist.org/photos/3505851"
+    },
+    {
+        "id":  "austropotamobius-pallipes",
+        "sci":  "Austropotamobius pallipes",
+        "inat":  "Austropotamobius pallipes",
+        "nomFr":  null,
+        "file":  "austropotamobius-pallipes.jpg",
+        "licence":  "cc-by-nc",
+        "credit":  "(c) Daniele Seglie, some rights reserved (CC BY-NC), uploaded by Daniele Seglie",
+        "source":  "https://www.inaturalist.org/photos/2861471"
+    }
+]
