@@ -39,7 +39,22 @@ npm run dev                 # ouvre http://localhost:5173
 
 Pour tester sur ton téléphone sur le même Wi-Fi : `npm run dev -- --host` puis ouvre l'adresse « Network » affichée.
 
-### 5. Mettre en ligne sur Hostinger
+### 5. Tester sur ton téléphone (GitHub Pages, gratuit)
+À chaque `git push`, GitHub teste le code, construit le site et le met en ligne sur **https://victor0904.github.io/Bestaire/** (fichier `.github/workflows/deploy.yml` à la racine du dépôt).
+Réglages à faire une seule fois sur GitHub, dans le dépôt :
+1. **Settings → Pages → Source : GitHub Actions**.
+2. **Settings → Secrets and variables → Actions → New repository secret**, deux fois :
+   `VITE_SUPABASE_URL` (même valeur que dans `.env`) et `VITE_SUPABASE_ANON_KEY` (la clé anon).
+3. Supabase → Authentication → URL Configuration → *Redirect URLs* : ajoute `https://victor0904.github.io/Bestaire/**`.
+4. Onglet **Actions** du dépôt → « Mise en ligne » → **Run workflow** (ou fais un push). Au bout de 2 minutes, le site est en ligne.
+Sur le téléphone : ouvre l'adresse dans Chrome (Android) ou Safari (iPhone) → « Ajouter à l'écran d'accueil » pour l'avoir comme une appli.
+
+### 6. Envoi des e-mails de connexion (obligatoire avant d'inviter des joueurs)
+Sans réglage, Supabase n'envoie les e-mails qu'aux membres de ton équipe Supabase, et 2 par heure au maximum.
+Crée un compte gratuit sur <https://resend.com> (3 000 e-mails/mois), puis Supabase → **Authentication → Emails → SMTP Settings** : hôte `smtp.resend.com`, port `465`, utilisateur `resend`, mot de passe = ta clé API Resend, expéditeur = une adresse de ton domaine vérifié dans Resend.
+En attendant, crée les comptes de test dans Supabase → Authentication → Users → **Add user** (cocher *Auto Confirm User*).
+
+### 7. Mettre en ligne sur Hostinger (plus tard, avec ton nom de domaine)
 ```powershell
 npm run build
 ```
