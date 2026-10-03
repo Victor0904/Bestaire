@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { adversaires, gainsEtape, diffOuverte, enAttente, recolter, ameliorer, prixAmelioration, STARS, star, nouveau, nourrir, vieillir, jouer, apprendre, equiper, points, niveauC, xpNiv, changer, peutChanger, membre, adequation, MAX_ACTIVES } from '../game/compagnon';
+import { adversaires, gainsEtape, diffOuverte, STARS, star, nouveau, nourrir, vieillir, jouer, apprendre, equiper, points, niveauC, xpNiv, changer, peutChanger, membre, adequation, MAX_ACTIVES } from '../game/compagnon';
 import { mkFighter, newBattle, playTurn, ai } from '../game/combat';
 import { etape } from '../game/adventure';
 
@@ -61,13 +61,5 @@ describe('compagnon', () => {
     expect(f3[0].niv!).toBe(f1[0].niv! + 8); expect(f3[0].mult!).toBeGreaterThan(f1[0].mult!); expect(f1.length).toBeLessThanOrEqual(2);
     expect(gainsEtape(c, 0, 2, true).xp).toBeGreaterThan(gainsEtape(c, 0, 1, true).xp);
     expect(gainsEtape(c, 0, 1, true).premiere).toBe(false); expect(gainsEtape(c, 0, 2, true).premiere).toBe(true);
-  });
-  it('camp d’entraînement : gains pendant l’absence, plafonnés, améliorables', () => {
-    const c = { ...nouveau('canis-lupus', 'Croc'), maj: 0, recolte: 0, ecus: 1000 };
-    const a = enAttente(c, 2 * 3.6e6); expect(a.xp).toBe(16); expect(a.ecus).toBe(6);
-    expect(enAttente(c, 100 * 3.6e6).h).toBe(4);
-    const r = recolter(c, 2 * 3.6e6); expect(r.xp).toBe(16); expect(enAttente(r, 2 * 3.6e6).xp).toBe(0);
-    const u = ameliorer({ ...c, recolte: Date.now() }, 'xp')!; expect(u.camp!.xp).toBe(1); expect(u.ecus).toBe(1000 - prixAmelioration('xp', 0));
-    expect(ameliorer({ ...c, ecus: 0, recolte: Date.now() }, 'xp')).toBeNull();
   });
 });

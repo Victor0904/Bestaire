@@ -5,7 +5,7 @@ import { Battle as B, mkFighter, newBattle } from '../game/combat';
 import { CHAPITRES, ETAPES_PAR_CHAPITRE, NB_ETAPES, etape, nomEtape } from '../game/adventure';
 import {
   ALIMENTS, Aliment, COMPETENCES, COMP, Compagnon as C, MAX_ACTIVES, MAX_ADVERSAIRES, STARS, TRAITS, Star,
-  adequation, adversaires, apprendre, changer, diffOuverte, gainsEtape, DIFFS, enAttente, recolter, ameliorer, rendement, campDe, prixAmelioration, AMELIORATIONS, CAMP_MAX, equiper, jouer, jour, membre, niveauC, nourrir, nouveau, peutChanger, points, star, vieillir, xpNiv, XP_REPAS,
+  adequation, adversaires, apprendre, changer, diffOuverte, gainsEtape, DIFFS, equiper, jouer, jour, membre, niveauC, nourrir, nouveau, peutChanger, points, star, vieillir, xpNiv, XP_REPAS,
 } from '../game/compagnon';
 import { api, CompagnonRow } from '../lib/api';
 import { useGame } from '../lib/store';
@@ -13,6 +13,8 @@ import { sfx } from '../lib/sfx';
 import { buzz, confetti } from '../lib/fx';
 import { GI } from '../components/GI';
 import { Arena, BIOME_GI, Fin } from './Arena';
+import { Absence, bonusConnexion, mission, missionsDuJour, MISSIONS, peutRenaitre, puissanceC, renaitre, retour } from '../game/idle';
+import { AbsenceModal, Coffres, Heritage, Missions, Recolte, Territoire } from './CompagnonIdle';
 
 const KEY = (uid: string) => `bestiaire.compagnon.${uid}`;
 const REGIME: Record<string, string> = { carnivore: 'Carnivore', herbivore: 'Herbivore', omnivore: 'Omnivore', piscivore: 'Mange du poisson' };
@@ -25,13 +27,16 @@ function useCompagnon() {
   const { uid } = useGame();
   const [c, setC] = useState<C | null | undefined>(undefined);
   const [enLigne, setEnLigne] = useState<boolean | null>(null);
+  const [absence, setAbsence] = useState<Absence | null>(null);
   const t = useRef<ReturnType<typeof setTimeout>>();
+  const charger = (x: C) => { const r = retour(vieillir(norm(x))); if (r.absence) setAbsence(r.absence); return r.c };
   useEffect(() => {
     let loc: C | null = null; try { loc = JSON.parse(localStorage.getItem(KEY(uid)) || 'null') } catch { /* rien */ }
-    setC(loc ? vieillir(norm(loc)) : null);
-    api.compagnonMien(uid).then(r => { setEnLigne(true); const d = r?.data as C | undefined; if (d && (!loc || d.maj > loc.maj)) setC(vieillir(norm(d))) }).catch(() => setEnLigne(false));
-  }, [uid]);
-  const save = useCallback((n: C | null) => {
+    setC(loc ? charger(loc) : null);
+    api.compagnonMien(uid).then(r => { setEnLigne(true); const d = r?.data as C | undefined; if (d && (!loc || d.maj > loc.maj)) setC(charger(d)) }).catch(() => setEnLigne(false));
+  }, [uid]); // eslint-disable-line react-hooks/exhaustive-deps
+  const save = useCallback((n0: C | null) => {
+    const n = n0 ? { ...n0, vu: Date.now() } : n0;
     setC(n); if (!n) return;
     try { localStorage.setItem(KEY(uid), JSON.stringify(n)) } catch { /* rien */ }
     clearTimeout(t.current);
@@ -39,14 +44,14 @@ function useCompagnon() {
   }, [uid]);
   // le temps passe aussi quand l'écran reste ouvert
   useEffect(() => { const i = setInterval(() => setC(x => (x ? vieillir(x) : x)), 60000); return () => clearInterval(i) }, []);
-  return { c, save, enLigne };
+  return { c, save, enLigne, absence, setAbsence };
 }
 
-type Vue = 'maison' | 'manger' | 'competences' | 'aventure' | 'arene' | 'changer';
+type Vue = 'maison' | 'manger' | 'competences' | 'aventure' | 'arene' | 'changer' | 'coffres' | 'missions' | 'heritage' | 'renaitre';
 
 export function Compagnon() {
   const { toast } = useGame();
-  const { c, save, enLigne } = useCompagnon();
+  const { c, save, enLigne, absence, setAbsence } = useCompagnon();
   const [vue, setVue] = useState<Vue>('maison');
   const [combat, setCombat] = useState<{ b: B; id: number; onFin: (b: B) => Promise<Fin> } | null>(null);
   if (c === undefined) return <p className="note loading">Chargement…</p>;
@@ -64,6 +69,12 @@ export function Compagnon() {
       {vue === 'competences' && <Competences c={c} save={save} />}
       {vue === 'aventure' && <AventureC c={c} save={save} lancer={lancer} />}
       {vue === 'arene' && <AreneC c={c} save={save} lancer={lancer} enLigne={enLigne} />}
+      {vue === 'coffres' && <Coffres c={c} save={save} />}
+      {vue === 'missions' && <Missions c={c} save={save} />}
+      {vue === 'heritage' && <Heritage c={c} save={save} renaitre={() => setVue('renaitre')} />}
+      {vue === 'renaitre' && <BoxScreen titre="Renaissance" sous={`${c.surnom} transmet son héritage. Choisis l'animal qui repart de zéro… plus fort que jamais.`} choix={3} exclure={c.espece}
+        onPick={(st, nom) => { save(renaitre(c, st.id, nom)); setVue('heritage'); toast(`${nom} renaît avec l'héritage de ses ancêtres !`) }} />}
+      {absence && vue === 'maison' && <AbsenceModal c={c} a={absence} onClose={() => setAbsence(null)} />}
       {vue === 'changer' && <BoxScreen titre="Nouvelle box" sous={`Choisis ton nouvel animal. ${c.surnom} part en retraite : tu gardes ton niveau, tes écus et ta progression, mais tes compétences et tes traits repartent de zéro.`} choix={3} exclure={c.espece}
         onPick={(st, nom) => { save(changer(c, st.id, nom)); setVue('maison'); toast(`${nom} prend la relève !`) }} />}
     </section>
@@ -124,18 +135,22 @@ function Maison({ c, save, go }: { c: C; save: (c: C) => void; go: (v: Vue) => v
         <Gauge ic="🍖" nom="Faim" v={c.faim} warn={c.faim < 25 ? 'Affamé : −20 % en combat' : ''} />
         <Gauge ic="💛" nom="Bonheur" v={c.bonheur} warn={c.bonheur > 70 ? 'Heureux : +5 % en combat' : ''} />
       </div>
-      <CampCard c={c} save={save} />
-      {bonus && <button className="btn primary daily" onClick={() => { save({ ...c, ecus: c.ecus + 25, bonusJour: jour() }); sfx.etoile(2); toast('+25 écus') }}><GI n="coffreOuvert" /> Bonus du jour : +25 écus</button>}
+      {bonus && <button className="btn primary daily" onClick={() => { const r = bonusConnexion(c); if (r) { save(r.c); sfx.etoile(2); toast(`+${r.gain} écus · série de ${r.serie} jour${r.serie > 1 ? 's' : ''}`) } }}><GI n="coffreOuvert" /> Bonus du jour (série {(c.serie?.n || 0) + 1})</button>}
+      <Territoire c={c} save={save} />
+      <Recolte c={c} save={save} />
       <div className="pet-actions">
         <button onClick={() => go('manger')}><span className="em">🍽️</span><b>Nourrir</b><small>{c.faim < 50 ? 'Il a faim' : 'Repas adapté = plus d’XP'}</small></button>
         <button onClick={play} disabled={!jeuOk}><span className="em">🎾</span><b>Jouer</b><small>{jeuOk ? '+25 bonheur' : 'Il se repose'}</small></button>
+        <button onClick={() => go('coffres')}><span className="em">🎁</span><b>Coffres</b><small>{c.coffres || 0} à ouvrir · équipement</small>{(c.coffres || 0) > 0 && <i className="bdot" />}</button>
+        <button onClick={() => go('missions')}><span className="em">📜</span><b>Missions</b><small>{missionsDuJour(c).pris.length}/{Object.keys(MISSIONS).length} du jour</small>{missionPrete(c) && <i className="bdot" />}</button>
         <button onClick={() => go('competences')}><GI n="niveau" className="ic" /><b>Compétences</b><small>{pts > 0 ? `${pts} point${pts > 1 ? 's' : ''} à dépenser` : `${c.actives.length}/${MAX_ACTIVES} équipées`}</small>{pts > 0 && <i className="bdot" />}</button>
         <button onClick={() => go('aventure')}><GI n="aventure" className="ic" /><b>Aventure</b><small>{Object.keys(c.aventure).length}/{NB_ETAPES} étapes</small></button>
         <button onClick={() => go('arene')}><GI n="arene" className="ic" /><b>Arène</b><small>{c.rating} pts · {c.victoires} V / {c.defaites} D</small></button>
+        <button onClick={() => go('heritage')}><span className="em">✨</span><b>Héritage</b><small>{peutRenaitre(c) ? 'Renaissance possible !' : `${c.heritage?.points || 0} point${(c.heritage?.points || 0) > 1 ? 's' : ''}`}</small>{peutRenaitre(c) && <i className="bdot" />}</button>
         <button onClick={() => go('changer')} disabled={!peutChanger(c)}><GI n="auto" className="ic" /><b>Changer d'animal</b><small>{peutChanger(c) ? 'Disponible !' : `Au niveau ${c.dernierChangement + 10}`}</small></button>
       </div>
       <div className="panel">
-        <p className="eyebrow">En combat</p>
+        <p className="eyebrow">En combat · puissance {puissanceC(c).toLocaleString('fr-FR')}</p>
         <div className="cstats"><span><GI n="pv" />{f.maxHp}<small>PV</small></span><span><GI n="att" />{f.att}<small>Attaque</small></span><span><GI n="def" />{f.def}<small>Défense</small></span><span><GI n="vitStat" />{f.vit}<small>Vitesse</small></span></div>
         <p className="note">Compétences : {c.actives.map(id => COMP[id]?.nom).join(', ')}</p>
         {c.traits.length > 0 && <div className="traits">{c.traits.map(id => { const t = TRAITS.find(x => x.id === id)!; return <span key={id} className="trait"><b>{t.nom}</b>{t.desc}</span> })}</div>}
@@ -143,31 +158,18 @@ function Maison({ c, save, go }: { c: C; save: (c: C) => void; go: (v: Vue) => v
       <details className="panel rules"><summary>Comment ça marche ?</summary>
         <p><b>Nourriture.</b> Chaque repas coûte des écus. Le repas adapté au régime de ton animal donne le plus d'expérience ({XP_REPAS.ideal} XP), un repas inadapté très peu ({XP_REPAS.inadapte} XP)… mais à force, ton animal se transforme et gagne un <b>trait</b> avec une compétence spéciale (un lion nourri d'herbe devient « Brouteur »).</p>
         <p><b>Faim et bonheur.</b> Ils baissent avec le temps, même quand tu n'es pas là. Affamé, ton animal perd 20 % de sa force ; heureux, il gagne 5 %.</p>
-        <p><b>Écus.</b> Gagnés en aventure, en arène et avec le bonus du jour.</p>
+        <p><b>Territoire.</b> Toutes les 2 minutes, même appli fermée, ton animal affronte le gardien du palier suivant. Plus il est puissant (niveau, équipement, héritage), plus il monte haut — et plus le camp rapporte.</p>
+        <p><b>Camp.</b> XP, écus et coffres s'accumulent selon ton palier, dans la limite du stockage : reviens récolter. Boost ×2 trois fois par jour.</p>
+        <p><b>Coffres.</b> Ils contiennent de l'équipement (crocs, pelage, cuirasse, amulette) de 5 raretés. « Tout ouvrir » garde automatiquement les meilleurs objets.</p>
+        <p><b>Renaissance.</b> Dès le palier 25, recommence avec un nouvel animal contre des points d'héritage permanents.</p>
+        <p><b>Écus.</b> Camp, aventure, arène, missions, bonus du jour.</p>
         <p><b>Compétences.</b> 1 point par niveau. 4 compétences actives au maximum, plus des passifs.</p>
         <p><b>Changer d'animal.</b> Tous les 10 niveaux, une nouvelle box : tu gardes ton niveau, tes compétences repartent de zéro.</p>
       </details>
     </>
   );
 }
-function CampCard({ c, save }: { c: C; save: (c: C) => void }) {
-  const { toast } = useGame();
-  const [, tick] = useState(0); const [ouvert, setOuvert] = useState(false);
-  useEffect(() => { const i = setInterval(() => tick(x => x + 1), 5000); return () => clearInterval(i) }, []);
-  const a = enAttente(c), cp = campDe(c), fmt = (x: number) => x.toLocaleString('fr-FR', { maximumFractionDigits: 1 });
-  const recolte = () => { if (!a.xp && !a.ecus) return toast('Rien à récolter pour l’instant'); const n = recolter(c); save(n); sfx.etoile(1); toast(`+${a.xp} XP · +${a.ecus} écus`); if (niveauC(n.xp) > niveauC(c.xp)) setTimeout(() => sfx.niveau(), 300) };
-  return (
-    <div className={`camp ${a.plein ? 'plein' : ''}`}>
-      <div className="camp-h"><span className="em">🏕️</span><div><b>Camp d'entraînement</b><small>{c.surnom} s'entraîne même quand tu n'es pas là · {fmt(a.xpH)} XP/h · {fmt(a.ecusH)} écus/h</small></div></div>
-      <div className="camp-g"><div className="gbar"><i style={{ width: `${Math.round((100 * a.h) / a.stockH)}%` }} /></div><small>{a.plein ? 'Plein ! Récolte vite' : `${fmt(a.h)} h / ${a.stockH} h`}</small></div>
-      {a.faible && <p className="note warn">Il a trop faim : il s'entraîne deux fois moins bien.</p>}
-      <div className="row"><button className="btn primary" onClick={recolte}>Récolter +{a.xp} XP · +{a.ecus} écus</button><button className="btn ghost small" onClick={() => setOuvert(!ouvert)} aria-expanded={ouvert}>Améliorer</button></div>
-      {ouvert && <div className="upg">{AMELIORATIONS.map(u => { const lvl = cp[u.k], prix = prixAmelioration(u.k, lvl), max = lvl >= CAMP_MAX;
-        return <div key={u.k} className="upg-l"><span><b>{u.nom} <small>niv. {lvl}/{CAMP_MAX}</small></b><small>{u.desc}</small></span>
-          <button className="btn small" disabled={max || c.ecus + a.ecus < prix} onClick={() => { const n = ameliorer(c, u.k); if (n) { save(n); sfx.buff(); toast(`${u.nom} amélioré !`) } }}>{max ? 'Max' : `${prix} écus`}</button></div> })}</div>}
-    </div>
-  );
-}
+const missionPrete = (c: C) => { const m = missionsDuJour(c); return (Object.keys(MISSIONS) as (keyof typeof MISSIONS)[]).some(id => !m.pris.includes(id) && (m.c[id] || 0) >= MISSIONS[id].but) };
 function Gauge({ ic, nom, v, warn }: { ic: string; nom: string; v: number; warn: string }) {
   const p = Math.round(v);
   return <div className="gauge"><span className="gi-em">{ic}</span><div><div className="row spread"><b>{nom}</b><small>{p} %</small></div><div className={`gbar ${p < 25 ? 'low' : p < 55 ? 'mid' : ''}`}><i style={{ width: `${p}%` }} /></div>{warn && <small className="note">{warn}</small>}</div></div>;
@@ -181,7 +183,7 @@ function Manger({ c, save }: { c: C; save: (c: C) => void }) {
   const [miam, setMiam] = useState<{ ic: string; xp: number; k: number } | null>(null);
   const donner = (a: Aliment) => {
     const r = nourrir(c, a); if (r.refus) return toast(r.refus);
-    save(r.c); setMiam({ ic: ALIMENTS[a].ic, xp: r.xp, k: Date.now() }); sfx[r.adeq === 'inadapte' ? 'poison' : 'soin']();
+    save(r.adeq === 'ideal' ? mission(r.c, 'repas') : r.c); setMiam({ ic: ALIMENTS[a].ic, xp: r.xp, k: Date.now() }); sfx[r.adeq === 'inadapte' ? 'poison' : 'soin']();
     if (niveauC(r.c.xp) > niveauC(c.xp)) { setTimeout(() => sfx.niveau(), 400); toast(`Niveau ${niveauC(r.c.xp)} ! +1 point de compétence`) }
     if (r.trait) { setTimeout(() => sfx.ultime(), 300); toast(`Nouveau trait : ${r.trait.nom} !`) }
   };
@@ -241,7 +243,7 @@ function AventureC({ c, save, lancer }: { c: C; save: (c: C) => void; lancer: (b
       const r = gainsEtape(cc, g, dd, !!bt.won), avant = niveauC(cc.xp);
       const n: C = { ...cc, xp: cc.xp + r.xp, ecus: cc.ecus + r.ecus, faim: Math.max(0, cc.faim - 6), bonheur: Math.min(100, cc.bonheur + (bt.won ? 4 : -4)),
         aventure: bt.won ? { ...cc.aventure, [g]: Math.max(dd, cc.aventure[g] || 0) } : cc.aventure, victoires: cc.victoires + (bt.won ? 1 : 0), defaites: cc.defaites + (bt.won ? 0 : 1) };
-      save(n);
+      save(bt.won ? mission(n, 'victoire') : n);
       const apres = niveauC(n.xp);
       return { titre: bt.won ? (et.genre === 'boss' ? 'Boss vaincu !' : `Victoire · ${DIFFS[dd - 1].nom}`) : 'Défaite', etoiles: bt.won ? dd : undefined,
         lignes: [`+${r.xp} XP · +${r.ecus} écus${r.premiere ? ' (première victoire)' : ''}`, apres > avant ? `${cc.surnom} passe au niveau ${apres} ! +1 point de compétence` : `Niveau ${apres}`,
@@ -284,7 +286,7 @@ function AreneC({ c, save, lancer, enLigne }: { c: C; save: (c: C) => void; lanc
     lancer(b, async (bt) => {
       const res = await run(api.compagnonDuel(r.owner, !!bt.won));
       const n: C = { ...c, rating: res?.rating ?? c.rating, xp: c.xp + (bt.won ? 25 : 8), ecus: c.ecus + (bt.won ? 15 : 3), faim: Math.max(0, c.faim - 6), victoires: c.victoires + (bt.won ? 1 : 0), defaites: c.defaites + (bt.won ? 0 : 1) };
-      save(n);
+      save(bt.won ? mission(n, 'victoire') : n);
       return { lignes: [`${res ? `${res.delta >= 0 ? '+' : ''}${res.delta} points · ` : ''}+${bt.won ? 25 : 8} XP · +${bt.won ? 15 : 3} écus`] };
     });
   };

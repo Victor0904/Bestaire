@@ -98,7 +98,21 @@ export interface Compagnon {
   aventure: Record<string, number>;                    // étoiles par étape
   dernierChangement: number; jeuA: number; bonusJour: string; victoires: number; defaites: number; rating: number;
   camp?: Camp; recolte?: number;                     // camp d'entraînement (idle)
+  // --- idle avancé (voir idle.ts) ---
+  palier?: number; palierMax?: number; chasseA?: number;   // territoire : chasse automatique
+  journal?: { t: number; ok: boolean; p: number }[];        // derniers combats automatiques
+  coffres?: number; coffreFrac?: number; niveauCoffre?: number; eclats?: number;
+  equip?: Partial<Record<Slot, Objet>>;
+  heritage?: { points: number; total: number; talents: Partial<Record<TalentId, number>>; renaissances: number };
+  missions?: { jour: string; c: Partial<Record<MissionId, number>>; pris: MissionId[]; bonus?: boolean };
+  serie?: { jour: string; n: number };
+  boost?: { jusqua: number; jour: string; n: number };
+  vu?: number;
 }
+export type Slot = 'crocs' | 'pelage' | 'cuirasse' | 'amulette';
+export type TalentId = 'sagesse' | 'fortune' | 'force' | 'flair' | 'endurance';
+export type MissionId = 'recolte' | 'repas' | 'victoire' | 'coffre' | 'palier';
+export interface Objet { slot: Slot; rar: number; ilvl: number; stat: keyof Mods; pct: number }
 export const NIV_MAX = 50;
 // courbe d'expérience : plus douce que les cartes (un seul animal)
 export const xpNiv = (n: number) => 20 * (n - 1) * (n - 1) + 40 * (n - 1);
@@ -108,7 +122,7 @@ export const peutChanger = (c: Compagnon) => niveauC(c.xp) >= c.dernierChangemen
 
 export function nouveau(espece: string, surnom: string): Compagnon {
   const now = Date.now();
-  return { v: 1, espece, surnom, xp: 0, faim: 45, bonheur: 70, maj: now, ecus: 60, appris: ['griffes'], actives: ['griffes'], repas: {}, traits: [], aventure: {}, dernierChangement: 1, jeuA: 0, bonusJour: '', victoires: 0, defaites: 0, rating: 1000, camp: { xp: 0, ecus: 0, stock: 0 }, recolte: now };
+  return { v: 1, espece, surnom, xp: 0, faim: 45, bonheur: 70, maj: now, ecus: 60, appris: ['griffes'], actives: ['griffes'], repas: {}, traits: [], aventure: {}, dernierChangement: 1, jeuA: 0, bonusJour: '', victoires: 0, defaites: 0, rating: 1000, camp: { xp: 0, ecus: 0, stock: 0 }, recolte: now, palier: 1, palierMax: 1, chasseA: now, coffres: 1, vu: now };
 }
 
 /** Le temps passe : la faim et le bonheur baissent (faim −4/h, bonheur −2/h) */
@@ -168,6 +182,9 @@ export function membre(c: Compagnon): Membre {
   for (const k of ['pv', 'att', 'def'] as const) mods[k] *= forme;
   const add = (m?: Mods) => { if (m) for (const k of Object.keys(m) as (keyof Mods)[]) mods[k] *= m[k] || 1 };
   c.appris.forEach(id => add(COMP[id]?.mods)); c.traits.forEach(id => add(TRAITS.find(t => t.id === id)?.mods));
+  // équipement et héritage (idle)
+  for (const o of Object.values(c.equip || {})) if (o) mods[o.stat] *= 1 + o.pct / 100;
+  const f = 1 + 0.04 * (c.heritage?.talents.force || 0); for (const k of ['pv', 'att', 'def'] as const) mods[k] *= f;
   const abil: Ability[] = c.actives.map(id => COMP[id]).filter(k => k?.effet).map(k => ({ effet: k.effet!, puissance: k.p || 1, nom: k.nom }));
   return { s, lvl: 1, niv: niveauC(c.xp), abil, mods };
 }
@@ -195,35 +212,4 @@ export function gainsEtape(c: Compagnon, g: number, d: number, won: boolean) {
   const D = DIFFS[d - 1], premiere = won && (c.aventure[g] || 0) < d;
   if (!won) return { xp: 5, ecus: 2, premiere: false };
   return { xp: Math.round((15 + 3 * g) * D.gain), ecus: Math.round(ecusEtape(g, premiere) * D.gain), premiere };
-}
-
-// ---------------------------------------------------------------------
-// Camp d'entraînement (idle) : ton animal s'entraîne même quand tu n'es pas là
-// ---------------------------------------------------------------------
-export const CAMP_MAX = 8;
-export const AMELIORATIONS: { k: keyof Camp; nom: string; desc: string; base: number }[] = [
-  { k: 'xp', nom: "Terrain d'entraînement", desc: "+25 % d'expérience par heure", base: 60 },
-  { k: 'ecus', nom: 'Spectacles', desc: '+25 % d’écus par heure', base: 60 },
-  { k: 'stock', nom: 'Grand enclos', desc: '+2 h de récolte stockée', base: 80 },
-];
-export const prixAmelioration = (k: keyof Camp, lvl: number) => AMELIORATIONS.find(a => a.k === k)!.base * 2 ** lvl;
-export const campDe = (c: Compagnon): Camp => c.camp || { xp: 0, ecus: 0, stock: 0 };
-export function rendement(c: Compagnon) {
-  const cp = campDe(c), p = Object.keys(c.aventure).length, faible = c.faim < 10;
-  const k = faible ? 0.5 : 1;
-  return { xpH: (8 + 1.5 * p) * (1 + 0.25 * cp.xp) * k, ecusH: (3 + 0.5 * p) * (1 + 0.25 * cp.ecus) * k, stockH: 4 + 2 * cp.stock, faible };
-}
-export function enAttente(c: Compagnon, now = Date.now()) {
-  const r = rendement(c), depuis = c.recolte || c.maj;
-  const h = Math.max(0, Math.min(r.stockH, (now - depuis) / 3.6e6));
-  return { h, xp: Math.floor(h * r.xpH), ecus: Math.floor(h * r.ecusH), plein: h >= r.stockH, ...r };
-}
-export function recolter(c: Compagnon, now = Date.now()): Compagnon {
-  const a = enAttente(c, now);
-  return { ...c, xp: c.xp + a.xp, ecus: c.ecus + a.ecus, recolte: now };
-}
-export function ameliorer(c: Compagnon, k: keyof Camp): Compagnon | null {
-  const r = recolter(c), cp = campDe(c), lvl = cp[k], prix = prixAmelioration(k, lvl);
-  if (lvl >= CAMP_MAX || r.ecus < prix) return null;
-  return { ...r, ecus: r.ecus - prix, camp: { ...cp, [k]: lvl + 1 } };
 }

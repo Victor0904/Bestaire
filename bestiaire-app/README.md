@@ -150,7 +150,7 @@ Ces textes sont un point de départ sérieux, pas un avis juridique : fais-les r
 
 | Commande | Ce qui est vérifié |
 |---|---|
-| `npm test` | 50 tests (mode Compagnon, progression RPG, instinct et coups ultimes, 60 étapes d'aventure reproductibles, dont le chiffrement des notifications, vérifié avec la bibliothèque de référence) : données des 1 135 espèces, cote identique à la base, saisons, moteur de combat (300 combats simulés, toujours terminés), règles d'abonnement Stripe |
+| `npm test` | 64 tests (mode Compagnon, progression RPG, instinct et coups ultimes, 60 étapes d'aventure reproductibles, dont le chiffrement des notifications, vérifié avec la bibliothèque de référence) : données des 1 135 espèces, cote identique à la base, saisons, moteur de combat (300 combats simulés, toujours terminés), règles d'abonnement Stripe |
 | `npm run test:db` | 178 tests sur une vraie base PostgreSQL : sécurité (RLS, anti-triche), safari, pellicules, premium, répartition des raretés sur 2 000 photos, fusions, enchères, collectionneurs, défis, combats, duels, succès, amis, guildes, notifications, modération, expérience et niveaux, aventure (étapes, étoiles, boss), suppression de compte |
 | `npm run test:e2e` | 78 étapes dans un vrai navigateur mobile, 2 joueurs : connexion, safari, fusion, enchère gagnée par l’autre joueur, aventure (carte, étoiles, expérience), combat sauvage, duel, défis, abonnement, tentative de triche |
 
@@ -198,4 +198,10 @@ Un autre jeu dans le jeu : le joueur ouvre une box et reçoit **un seul animal c
 - **Aventure** : les 60 étapes de l'Aventure, 2 adversaires au plus, chacune en 3 difficultés (★ facile, ★★ normal, ★★★ difficile : adversaires plus forts, gains ×1,7 et ×2,6). « Étape suivante » enchaîne directement.
 - **Camp d'entraînement (idle)** : l'animal gagne de l'XP et des écus même hors ligne (selon sa progression), stockage limité (4 h au départ) ; 3 améliorations payées en écus. **Arène** : duels contre les compagnons des autres joueurs (classement).
 - **Changer d'animal** : tous les 10 niveaux, nouvelle box (3 choix) ; niveau gardé, compétences et traits remis à zéro.
+- **Idle** (inspiré d'AFK Journey, Legend of Mushroom, Capybara Go) :
+  - **Territoire** : toutes les 2 minutes, même appli fermée, l'animal affronte le gardien du palier suivant (boss tous les 10). Sa puissance (niveau, équipement, héritage) décide jusqu'où il monte : c'est le « mur de puissance ».
+  - **Camp** : XP, écus et coffres s'accumulent selon le palier, dans la limite du stockage ; boost ×2 trois fois par jour ; 3 améliorations.
+  - **Coffres** : équipement en 4 emplacements (crocs, pelage, cuirasse, amulette) et 5 raretés, niveau d'objet = palier ; « tout ouvrir » garde le meilleur ; niveau du coffre améliorable ; achat de coffres.
+  - **Renaissance** (prestige) dès le palier 25 : nouvel animal, niveau et palier remis à zéro, points d'héritage permanents (5 talents).
+  - **Missions du jour**, coffre doré, série de connexion, écran « Pendant ton absence ».
 - Version test : l'état est calculé dans l'appli (`src/game/compagnon.ts`) et sauvegardé tel quel (`compagnons`). Avant une vraie sortie, il faudra déplacer les règles (écus, expérience) côté serveur pour empêcher la triche.
