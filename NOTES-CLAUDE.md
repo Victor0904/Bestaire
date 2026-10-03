@@ -2,6 +2,11 @@
 
 Chaque session ajoute une entrée en haut : date, qui (cloud / PC), ce qui a changé, ce qui reste.
 
+## 2026-10-03 (19 h) — Claude (cloud)
+- Nouvel onglet « Test » : mode Compagnon (box → un animal célèbre à élever : faim, bonheur, écus, régime alimentaire et traits, compétences, aventure, arène des compagnons, changement d'animal tous les 10 niveaux).
+- Base : migration 005 `supabase/migrations/20261003000005_compagnon_test.sql` À EXÉCUTER (sans elle : sauvegarde sur le téléphone seulement, pas d'arène).
+- Tests : 48 unitaires, 178 base, 78 navigateur — tout passe.
+
 ## 2026-10-03 (17 h) — Claude (cloud)
 - Combat refait façon RPG : onglet Combat = Aventure (carte, 6 chapitres × 10 étapes, élites, boss, étoiles) + Sauvage + Arène (rangs Bronze → Légende).
 - Arène animée : décors SVG par milieu et heure, particules (canvas), sons synthétisés, icônes game-icons.net (CC BY 3.0), jauge d'instinct + coup ultime par classe avec cinématique.

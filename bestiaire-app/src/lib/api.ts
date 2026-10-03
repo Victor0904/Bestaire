@@ -27,6 +27,7 @@ export interface BotOffer { id: number; species_id: string; q: number; lvl: numb
 export interface Sale { species_id: string; lvl: number; q: number; price: number; at: string }
 export interface Defense { owner: string; team: { species_id: string; lvl: number; q: number; niv?: number }[]; rating: number; pseudo: string | null; updated_at: string }
 
+export interface CompagnonRow { owner: string; pseudo: string | null; espece: string; surnom: string | null; niveau: number; rating: number; data: unknown; updated_at: string }
 export interface XpResult { cap: boolean; cards: { id: number; xp: number; niv: number; avant: number }[] }
 export interface AdvResult { stars: number; first?: boolean; plumes: number; film: boolean; xp: XpResult; adv: Record<string, number> }
 
@@ -102,6 +103,17 @@ export const api = {
   async sales(): Promise<Sale[]> {
     const { data, error } = await supabase.from('sales').select('species_id,lvl,q,price,at').order('at', { ascending: false }).limit(500);
     if (error) throw error; return data as Sale[];
+  },
+  // Mode Compagnon (test)
+  compagnonSave: (espece: string, surnom: string, niveau: number, data: unknown) => rpc<void>('compagnon_save', { p_espece: espece, p_surnom: surnom, p_niveau: niveau, p_data: data }),
+  compagnonDuel: (def: string, won: boolean) => rpc<{ delta: number; rating: number }>('compagnon_duel', { p_def: def, p_won: won }),
+  async compagnonMien(uid: string): Promise<CompagnonRow | null> {
+    const { data, error } = await supabase.from('compagnons').select('*').eq('owner', uid).maybeSingle();
+    if (error) throw error; return data as CompagnonRow | null;
+  },
+  async compagnons(): Promise<CompagnonRow[]> {
+    const { data, error } = await supabase.from('compagnons').select('*').order('rating', { ascending: false }).limit(100);
+    if (error) throw error; return (data || []) as CompagnonRow[];
   },
   async defenses(): Promise<Defense[]> {
     const { data, error } = await supabase.from('defenses').select('*').order('rating', { ascending: false }).limit(200);

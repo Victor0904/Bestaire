@@ -167,6 +167,19 @@ await A.waitForTimeout(700);
 ok((await db.query(`select count(*)::int n from duels where attacker=$1`, [ua])).rows[0].n === 1, 'duel enregistré, classement mis à jour');
 await A.getByRole('button', { name: 'Retour' }).click();
 
+console.log('Mode test : compagnon');
+await tab(A, 'Test'); await A.locator('.box').click(); await A.getByRole('button', { name: /^Adopter/ }).waitFor({ timeout: 5000 });
+ok(await A.locator('.rc-portrait .spr').count() === 1, 'box ouverte : un animal célèbre révélé');
+await A.getByLabel('Donne-lui un surnom').fill('Simba'); await A.getByRole('button', { name: /^Adopter/ }).click();
+await A.locator('.pet').waitFor(); ok(await A.getByRole('heading', { name: 'Simba' }).isVisible(), 'compagnon adopté avec son surnom');
+await A.getByRole('button', { name: /Nourrir/ }).click(); await A.locator('.food.ideal').first().click(); await A.waitForTimeout(300);
+ok(/écus/.test(await A.locator('.mg-head').innerText()) && !(await A.locator('.mg-head').innerText()).includes('60 écus'), 'repas payé en écus');
+await A.getByRole('button', { name: /←/ }).click(); await A.getByRole('button', { name: /Aventure/ }).click();
+await A.getByRole('button', { name: /Combattre avec/ }).click(); await A.getByRole('button', { name: /Auto/ }).click();
+await A.locator('.a-end3').waitFor({ timeout: 90000 }); ok(true, 'combat d’aventure du compagnon terminé');
+await A.getByRole('button', { name: 'Retour' }).click(); await A.waitForTimeout(1600);
+ok((await db.query(`select surnom from compagnons where owner=$1`, [ua])).rows[0]?.surnom === 'Simba', 'compagnon sauvegardé en ligne');
+
 console.log('Défis du jour');
 await db.query(`update profiles set quests = jsonb_set(quests, '{0,prog}', to_jsonb((quests->0->>'goal')::int)) where id=$1`, [ua]);
 const before = await plumes('victor@test.fr'); const filmsBefore = (await db.query('select films from profiles where id=$1', [ua])).rows[0].films;

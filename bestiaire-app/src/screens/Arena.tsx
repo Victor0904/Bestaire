@@ -1,7 +1,7 @@
 // Arène de combat : décor du milieu, effets visuels, sons, jauge d'instinct et écran de fin avec expérience.
 import { ReactNode, useEffect, useRef, useState } from 'react';
 import { ACT, BIOME, Species, TIERS, photoRond } from '../game/species';
-import { ARCH, Ability, Battle as B, Choix, EFF, Effet, Fighter, INST_MAX, ULTIMES, aInstinct, abilities, active, ai, playTurn, prey, ultPret } from '../game/combat';
+import { ARCH, Ability, Battle as B, Choix, EFF, Effet, Fighter, INST_MAX, ULTIMES, aInstinct, capacites, active, ai, playTurn, prey, ultPret } from '../game/combat';
 import { NIV_INSTINCT, progression } from '../game/rpg';
 import { XpResult } from '../lib/api';
 import { buzz, confetti, reduceMotion } from '../lib/fx';
@@ -120,7 +120,7 @@ export function Arena({ b, titre, toursMax, onFin, onQuit }: { b: B; titre?: str
     return () => clearTimeout(t);
   });
 
-  const P = b.P[view.pi], E = b.E[view.ei], adv = prey(P, E), dis = prey(E, P), ab = abilities(P.s, P.lvl, P.niv);
+  const P = b.P[view.pi], E = b.E[view.ei], adv = prey(P, E), dis = prey(E, P), ab = capacites(P);
   const bio = BIOME[b.biome as keyof typeof BIOME];
   const perks = (f: Fighter) => [f.s.biomes.includes(b.biome as never) && 'Chez lui +15 %', f.s.act === 'N' && b.ph === 'nuit' && 'Nocturne : plus vif', f.s.act === 'D' && b.ph === 'jour' && 'Diurne : plus vif', f.s.act === 'C' && (b.ph === 'aube' || b.ph === 'crépuscule') && 'Crépusculaire : plus vif'].filter(Boolean) as string[];
   const tours = b.round - (b.over ? 1 : 0);

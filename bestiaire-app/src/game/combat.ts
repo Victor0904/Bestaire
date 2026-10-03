@@ -38,6 +38,8 @@ export function baseStats(s: Species) {
 export function statsAt(s: Species, lvl: number, niv = 1) { const b = baseStats(s), k = (1 + 0.1 * ((lvl || 1) - 1)) * (1 + 0.035 * ((niv || 1) - 1)); return { pv: Math.round(b.pv * k), att: Math.round(b.att * k), def: Math.round(b.def * k), vit: Math.round(b.vit * k) }; }
 /** Force d'une carte (pour comparer et équilibrer) */
 export const puissance = (s: Species, lvl: number, niv = 1) => { const t = statsAt(s, lvl, niv); return Math.round(t.pv * 0.6 + t.att * 2.2 + t.def * 1.6 + t.vit * 1.2) };
+/** Capacités d'un combattant : choisies (compagnon) ou celles de son espèce */
+export const capacites = (f: Fighter): Ability[] => f.abil || abilities(f.s, f.lvl, f.niv);
 export interface Ability { effet: Effet; puissance: number; nom: string }
 export function abilities(s: Species, lvl: number, niv = 1): Ability[] {
   const A = ARCH[s.arch] || ARCH.o; const l: (readonly [string, number])[] = [...A.ab];
@@ -46,16 +48,17 @@ export function abilities(s: Species, lvl: number, niv = 1): Ability[] {
 }
 export const PREY: Record<string, string[]> = { M: ['O', 'P', 'A'], O: ['I', 'K', 'R', 'A', 'X'], R: ['A', 'M', 'I'], A: ['I', 'K', 'X'], P: ['A', 'I', 'P', 'X'], I: ['I'], K: ['I'], X: [] };
 
-export interface Fighter { s: Species; lvl: number; niv: number; boss: boolean; inst: number; side: 'P' | 'E'; maxHp: number; hp: number; att: number; def: number; vit: number; energy: number; poison: { turns: number; dmg: number } | null; shield: number; dodge: number; stun: boolean; attMod: number; vitMod: number }
+export interface Fighter { s: Species; lvl: number; niv: number; boss: boolean; inst: number; abil?: Ability[]; side: 'P' | 'E'; maxHp: number; hp: number; att: number; def: number; vit: number; energy: number; poison: { turns: number; dmg: number } | null; shield: number; dodge: number; stun: boolean; attMod: number; vitMod: number }
 export interface LogLine { m: string; t?: 'sys'; adv?: boolean }
 /** Événements d'un tour, rejoués un par un par l'écran de combat (animations). */
 export interface Ev { k: 'ult' | 'inst' | 'act' | 'hit' | 'dodge' | 'heal' | 'shield' | 'stun' | 'poison' | 'tick' | 'buff' | 'debuff' | 'ko' | 'switch' | 'skip' | 'fatigue'; side: 'P' | 'E'; amt?: number; adv?: boolean; nom?: string; eff?: Effet | 'base'; hp?: number; i?: number }
 export interface Battle { ev?: Ev[]; round: number; biome: string; ph: string; P: Fighter[]; E: Fighter[]; pi: number; ei: number; log: LogLine[]; over: boolean; won?: boolean; fx?: { P: number; E: number } | null; pvp?: string; defRating?: number }
 export type Rng = () => number;
 
-export function mkFighter(s: Species, lvl: number, side: 'P' | 'E', niv = 1, boss = false, mult = 1): Fighter {
-  const t = statsAt(s, lvl, niv), m = (x: number) => Math.max(1, Math.round(x * mult)), hp = m(boss ? t.pv * 1.4 : t.pv);
-  return { s, lvl, niv, boss, inst: 0, side, maxHp: hp, hp, att: m(boss ? t.att * 1.1 : t.att), def: m(t.def), vit: t.vit, energy: 1, poison: null, shield: 0, dodge: 0, stun: false, attMod: 1, vitMod: 1 };
+export interface Mods { pv?: number; att?: number; def?: number; vit?: number }
+export function mkFighter(s: Species, lvl: number, side: 'P' | 'E', niv = 1, boss = false, mult = 1, abil?: Ability[], mods: Mods = {}): Fighter {
+  const t = statsAt(s, lvl, niv), m = (x: number, k = 1) => Math.max(1, Math.round(x * mult * k)), hp = m(boss ? t.pv * 1.4 : t.pv, mods.pv);
+  return { s, lvl, niv, boss, inst: 0, abil, side, maxHp: hp, hp, att: m(boss ? t.att * 1.1 : t.att, mods.att), def: m(t.def, mods.def), vit: Math.max(1, Math.round(t.vit * (mods.vit || 1))), energy: 1, poison: null, shield: 0, dodge: 0, stun: false, attMod: 1, vitMod: 1 };
 }
 export const prey = (a: Fighter, d: Fighter) => (a.s.arch === 'p' || a.s.arch === 'o') && (PREY[a.s.classe] || []).includes(d.s.classe) && a.s.id !== d.s.id;
 export const active = (B: Battle, side: 'P' | 'E') => B[side][side === 'P' ? B.pi : B.ei];
@@ -138,15 +141,15 @@ function doAct(B: Battle, f: Fighter, t: Fighter, a: Choix, first: boolean, L: L
 }
 export function ai(f: Fighter, rng: Rng): Choix {
   if (ultPret(f)) return { ult: true };
-  const ab = abilities(f.s, f.lvl, f.niv).filter(a => a.puissance <= f.energy);
+  const ab = capacites(f).filter(a => a.puissance <= f.energy);
   if (f.hp < f.maxHp * 0.35) { const d = ab.find(a => a.effet === 'soin' || a.effet === 'bouclier'); if (d) return d }
   if (ab.length && rng() < 0.75) { const off = ab.filter(a => ['frappe', 'nuee', 'poison', 'etourdir', 'embuscade'].includes(a.effet)); if (off.length) return off.sort((a, b) => b.puissance - a.puissance)[0]; return ab[Math.floor(rng() * ab.length)] }
   return null;
 }
 /** mult : ajustement d'équilibrage des adversaires (1 = normal) */
-export interface Membre { s: Species; lvl: number; niv?: number; boss?: boolean; mult?: number }
+export interface Membre { s: Species; lvl: number; niv?: number; boss?: boolean; mult?: number; abil?: Ability[]; mods?: Mods }
 export function newBattle(team: Membre[], foes: Membre[], biome: string, ph: string): Battle {
-  return { round: 1, biome, ph, P: team.map(x => mkFighter(x.s, x.lvl, 'P', x.niv, x.boss, x.mult)), E: foes.map(x => mkFighter(x.s, x.lvl, 'E', x.niv, x.boss, x.mult)), pi: 0, ei: 0, log: [], over: false };
+  return { round: 1, biome, ph, P: team.map(x => mkFighter(x.s, x.lvl, 'P', x.niv, x.boss, x.mult, x.abil, x.mods)), E: foes.map(x => mkFighter(x.s, x.lvl, 'E', x.niv, x.boss, x.mult, x.abil, x.mods)), pi: 0, ei: 0, log: [], over: false };
 }
 /** Joue un tour. choice : capacité, null (attaque de base) ou {sw:index} (changement). Modifie B. */
 export function playTurn(B: Battle, choice: Choix, rng: Rng = Math.random) {

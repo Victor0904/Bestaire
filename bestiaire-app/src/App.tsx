@@ -7,11 +7,12 @@ import { Icon, Toast } from './components/ui';
 import { Login } from './screens/Login';
 import { Safari } from './screens/Safari';
 // Écrans chargés à la demande : le premier affichage (Safari) arrive plus vite
-const load = { dex: () => import('./screens/Dex'), battle: () => import('./screens/Battle'), market: () => import('./screens/Market'), profile: () => import('./screens/Profile'), onb: () => import('./components/Onboarding') };
+const load = { cmp: () => import('./screens/Compagnon'), dex: () => import('./screens/Dex'), battle: () => import('./screens/Battle'), market: () => import('./screens/Market'), profile: () => import('./screens/Profile'), onb: () => import('./components/Onboarding') };
 const Dex = lazy(() => load.dex().then(m => ({ default: m.Dex })));
 const Battle = lazy(() => load.battle().then(m => ({ default: m.Battle })));
 const Market = lazy(() => load.market().then(m => ({ default: m.Market })));
 const Profile = lazy(() => load.profile().then(m => ({ default: m.Profile })));
+const Compagnon = lazy(() => load.cmp().then(m => ({ default: m.Compagnon })));
 const Onboarding = lazy(() => load.onb().then(m => ({ default: m.Onboarding })));
 // puis tout le reste en arrière-plan, dès que le téléphone est disponible
 const idle = (f: () => void) => ('requestIdleCallback' in window ? (window as unknown as { requestIdleCallback: (f: () => void) => void }).requestIdleCallback(f) : setTimeout(f, 1500));
@@ -30,7 +31,7 @@ export default function App() {
   return <GameProvider session={session}><Shell /></GameProvider>;
 }
 
-const TABS = [['safari', 'Safari', Icon.cam], ['dex', 'Bestiaire', Icon.book], ['battle', 'Combat', Icon.fight], ['market', 'Marché', Icon.coin], ['profile', 'Profil', Icon.user]] as const;
+const TABS = [['safari', 'Safari', Icon.cam], ['dex', 'Bestiaire', Icon.book], ['battle', 'Combat', Icon.fight], ['market', 'Marché', Icon.coin], ['compagnon', 'Test', Icon.star], ['profile', 'Profil', Icon.user]] as const;
 function Shell() {
   const { state, bySpecies, tab, go, toastMsg, badges, uid, refresh } = useGame();
   const [tutoDone, setTutoDone] = useState(false);
@@ -53,7 +54,7 @@ function Shell() {
           </div>
         </header>
         <Suspense fallback={<p className="note loading">Chargement…</p>}>
-          {tab === 'safari' && <Safari />}{tab === 'dex' && <Dex />}{tab === 'battle' && <Battle />}{tab === 'market' && <Market />}{tab === 'profile' && <Profile />}
+          {tab === 'safari' && <Safari />}{tab === 'dex' && <Dex />}{tab === 'battle' && <Battle />}{tab === 'market' && <Market />}{tab === 'profile' && <Profile />}{tab === 'compagnon' && <Compagnon />}
         </Suspense>
       </div>
       <nav className="tabs" aria-label="Sections"><div>{TABS.map(([k, label, ic]) => <button key={k} aria-current={tab === k ? 'page' : undefined} onClick={() => go(k)}>{ic}<span>{label}</span>{k === 'profile' && dot && <i className="bdot" aria-label="nouveau" />}</button>)}</div></nav>

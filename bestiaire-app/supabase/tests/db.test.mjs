@@ -380,6 +380,21 @@ await as(E, `select save_defense($1)`, [[ec[2]]]);
 ok((await admin(`select team from defenses where owner = $1`, [E])).rows[0].team[0].niv >= 1, 'la défense enregistre le niveau des animaux');
 ok((await as(E, 'select adventure_state() r')).rows[0].r.adv['9'] === 1, 'état de l’aventure lisible');
 
+console.log('Compagnon (test)');
+await admin('delete from compagnons');
+await as(A, `select compagnon_save('x-panthera-leo', 'Simba', 3, '{"espece":"x-panthera-leo"}'::jsonb)`);
+ok((await as(B, 'select surnom, niveau from compagnons')).rows[0]?.surnom === 'Simba', 'compagnon sauvegardé, visible des autres joueurs');
+ok(await fails(as(A, `update compagnons set rating = 9999`)) !== null, 'impossible de modifier son classement directement');
+ok(await fails(as(A, `select compagnon_save('licorne', 'X', 3, '{}'::jsonb)`)) !== null, 'espèce inconnue refusée');
+ok(await fails(as(A, `select compagnon_save('x-panthera-leo', 'X', 99, '{}'::jsonb)`)) !== null, 'niveau impossible refusé');
+ok(await fails(as(A, `select compagnon_save('x-panthera-leo', 'connard', 3, '{}'::jsonb)`)) !== null, 'surnom grossier refusé');
+ok(await fails(as(B, `select compagnon_duel($1, true)`, [A])) !== null, 'il faut sauvegarder son compagnon avant de combattre');
+await as(B, `select compagnon_save('canis-lupus', 'Croc', 4, '{"espece":"canis-lupus"}'::jsonb)`);
+const cd = (await as(B, `select compagnon_duel($1, true) r`, [A])).rows[0].r;
+ok(cd.delta > 0 && cd.rating === 1000 + cd.delta, `duel de compagnons gagné : +${cd.delta} points`);
+ok((await admin(`select rating from compagnons where owner=$1`, [A])).rows[0].rating < 1000, 'le compagnon battu perd des points');
+ok(await fails(as(B, `select compagnon_duel($1, true)`, [B])) !== null, 'pas de duel contre soi-même');
+
 console.log('Suppression de compte (RGPD)');
 const D = (await admin(`insert into auth.users(email) values ('d@test.fr') returning id`)).rows[0].id;
 await as(D, 'select get_state()');

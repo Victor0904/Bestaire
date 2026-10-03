@@ -19,10 +19,11 @@ Toute la logique qui compte (tirages, fusions, plumes, enchères, abonnement) s'
 4. Nouvelle requête : colle `supabase/migrations/20261002000002_social.sql` (succès, amis, guildes, suppression de compte) → **Run**.
 5. Nouvelle requête : colle `supabase/migrations/20261002000003_notif_moderation.sql` (notifications, modération) → **Run**.
 6. Nouvelle requête : colle `supabase/migrations/20261003000004_aventure_rpg.sql` (expérience, niveaux, Aventure) → **Run**.
-   Ces fichiers s'exécutent **toujours dans l'ordre 1 → 2 → 3 → 4**. Si tu en relances un, relance aussi les suivants.
+7. Nouvelle requête : colle `supabase/migrations/20261003000005_compagnon_test.sql` (mode Compagnon, onglet Test) → **Run**.
+   Ces fichiers s'exécutent **toujours dans l'ordre 1 → 2 → 3 → 4 → 5**. Si tu en relances un, relance aussi les suivants.
 6. Vérification rapide : `select count(*) from species;` doit renvoyer **1135**, et `select * from cron.job;` doit montrer `bestiaire-settle-auctions`.
 
-> **Mise à jour d'une base existante** : relance `…001_schema.sql`, puis `…002_social.sql`, puis `…003_notif_moderation.sql`, puis `…004_aventure_rpg.sql`, sans toucher au seed.
+> **Mise à jour d'une base existante** : relance `…001_schema.sql`, puis `…002_social.sql`, puis `…003_notif_moderation.sql`, puis `…004_aventure_rpg.sql`, puis `…005_compagnon_test.sql`, sans toucher au seed.
 > Les fichiers peuvent être relancés sans risque (mise à jour sans perte de données).
 > `supabase/tests/00_fake_supabase.sql` sert uniquement aux tests locaux : **ne pas l'exécuter sur Supabase**.
 
@@ -149,9 +150,9 @@ Ces textes sont un point de départ sérieux, pas un avis juridique : fais-les r
 
 | Commande | Ce qui est vérifié |
 |---|---|
-| `npm test` | 40 tests (progression RPG, instinct et coups ultimes, 60 étapes d'aventure reproductibles, dont le chiffrement des notifications, vérifié avec la bibliothèque de référence) : données des 1 135 espèces, cote identique à la base, saisons, moteur de combat (300 combats simulés, toujours terminés), règles d'abonnement Stripe |
-| `npm run test:db` | 169 tests sur une vraie base PostgreSQL : sécurité (RLS, anti-triche), safari, pellicules, premium, répartition des raretés sur 2 000 photos, fusions, enchères, collectionneurs, défis, combats, duels, succès, amis, guildes, notifications, modération, expérience et niveaux, aventure (étapes, étoiles, boss), suppression de compte |
-| `npm run test:e2e` | 73 étapes dans un vrai navigateur mobile, 2 joueurs : connexion, safari, fusion, enchère gagnée par l’autre joueur, aventure (carte, étoiles, expérience), combat sauvage, duel, défis, abonnement, tentative de triche |
+| `npm test` | 48 tests (mode Compagnon, progression RPG, instinct et coups ultimes, 60 étapes d'aventure reproductibles, dont le chiffrement des notifications, vérifié avec la bibliothèque de référence) : données des 1 135 espèces, cote identique à la base, saisons, moteur de combat (300 combats simulés, toujours terminés), règles d'abonnement Stripe |
+| `npm run test:db` | 178 tests sur une vraie base PostgreSQL : sécurité (RLS, anti-triche), safari, pellicules, premium, répartition des raretés sur 2 000 photos, fusions, enchères, collectionneurs, défis, combats, duels, succès, amis, guildes, notifications, modération, expérience et niveaux, aventure (étapes, étoiles, boss), suppression de compte |
+| `npm run test:e2e` | 78 étapes dans un vrai navigateur mobile, 2 joueurs : connexion, safari, fusion, enchère gagnée par l’autre joueur, aventure (carte, étoiles, expérience), combat sauvage, duel, défis, abonnement, tentative de triche |
 
 `test:db` et `test:e2e` demandent un PostgreSQL local et la passerelle de test (`tests/gateway.mjs`) : ils sont faits pour Linux/CI, pas besoin de les lancer sur ton PC.
 
@@ -187,3 +188,13 @@ supabase/functions/      paiement Stripe (Checkout, portail client, webhook)
 - Les formules (niveaux, récompenses) existent côté jeu (`src/game/rpg.ts`, `src/game/adventure.ts`) et côté base (`g_niv`, `adventure_win`) : les garder identiques.
 
 **Ressources libres utilisées** : icônes [game-icons.net](https://game-icons.net) (CC BY 3.0, crédit dans les mentions légales) ; décors SVG, effets de particules (canvas) et sons (Web Audio) créés pour le jeu, sans fichier externe.
+
+## Onglet « Test » : mode Compagnon (prototype)
+
+Un autre jeu dans le jeu : le joueur ouvre une box et reçoit **un seul animal célèbre** (lion, éléphant, rhinocéros, panda, loup, chat…, 14 pour le test) qu'il élève.
+
+- **Soins** : faim et bonheur baissent avec le temps réel. Nourrir coûte des **écus** (gagnés en aventure, en arène et avec le bonus du jour). Le repas adapté au régime donne beaucoup d'expérience ; un régime inadapté répété transforme l'animal (**traits** : Brouteur, Carnassier, Toxique, Pêcheur) et lui apprend une compétence spéciale.
+- **Compétences** : 1 point par niveau, 4 compétences actives + des passifs.
+- **Aventure** : les 60 étapes de l'Aventure, 2 adversaires au plus. **Arène** : duels contre les compagnons des autres joueurs (classement).
+- **Changer d'animal** : tous les 10 niveaux, nouvelle box (3 choix) ; niveau gardé, compétences et traits remis à zéro.
+- Version test : l'état est calculé dans l'appli (`src/game/compagnon.ts`) et sauvegardé tel quel (`compagnons`). Avant une vraie sortie, il faudra déplacer les règles (écus, expérience) côté serveur pour empêcher la triche.
