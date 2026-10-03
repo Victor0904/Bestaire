@@ -54,7 +54,7 @@ export function Adventure({ onFight }: { onFight: (on: boolean) => void }) {
       return {
         titre: bt.won ? (e.genre === 'boss' ? 'Boss vaincu !' : 'Victoire') : 'Défaite', etoiles: bt.won ? stars : undefined, lignes: l, xp: r.xp,
         equipe: equipe.map(x => ({ id: x.c.id, s: x.s, rang: x.c.lvl, xp: x.c.xp || 0 })),
-        suite: suiv !== null ? { label: 'Étape suivante', go: () => { setFight(null); setSel(suiv) } } : { label: 'Rejouer', go: () => lancer(e) },
+        suite: suiv !== null ? { label: 'Étape suivante', go: () => lancer(etapes[suiv]) } : { label: 'Rejouer', go: () => lancer(e) },
       };
     };
     return <Arena key={fight.id} b={b} titre={nomEtape(e)} toursMax={e.toursMax} onFin={onFin} onQuit={() => setFight(null)} />;

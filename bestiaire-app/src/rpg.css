@@ -381,3 +381,20 @@ nav.tabs button svg{padding:3px 10px}
 .opp-c{display:flex;align-items:center;gap:10px;border:1px solid var(--line);background:var(--paper);border-radius:14px;padding:8px 10px;margin-top:6px}
 .opp-c .spr{width:48px;height:48px;border-radius:50%;flex:none}
 .oc-b{flex:1;min-width:0;display:flex;flex-direction:column}.oc-b small{font-size:12px;color:var(--muted)}
+.camp{background:linear-gradient(160deg,color-mix(in srgb,#e0a020 16%,var(--paper)),var(--paper));border:1px solid color-mix(in srgb,#e0a020 45%,var(--line));border-radius:18px;padding:12px;display:flex;flex-direction:column;gap:8px;margin-bottom:10px}
+.camp.plein{animation:ultReady 1.6s ease-in-out infinite;--uc:#e0a020}
+.camp-h{display:flex;gap:10px;align-items:center}.camp-h .em{font-size:30px}.camp-h b{display:block;font:800 16px var(--f-display)}.camp-h small{font-size:12px;color:var(--muted)}
+.camp-g{display:grid;grid-template-columns:1fr auto;gap:8px;align-items:center}.camp-g small{font:600 11px var(--f-mono);color:var(--muted)}
+.camp .warn{color:var(--danger);margin:0}
+.upg{display:flex;flex-direction:column;gap:6px}
+.upg-l{display:flex;align-items:center;gap:10px;background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:8px 10px}
+.upg-l span{flex:1;display:flex;flex-direction:column}.upg-l b{font:800 14px var(--f-display)}.upg-l b small{font:600 10px var(--f-mono);color:var(--muted)}.upg-l>span>small{font-size:12px;color:var(--muted)}
+.diffs{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin:8px 0}
+.diffs button{display:flex;flex-direction:column;align-items:center;gap:1px;border:2px solid var(--line);background:var(--paper);border-radius:14px;padding:8px 4px;color:var(--ink)}
+.diffs button span{color:#e0a020;font-size:15px;letter-spacing:-1px}
+.diffs button b{font:800 13px var(--f-display)}.diffs button small{font-size:10.5px;color:var(--muted);display:inline-flex;gap:3px;align-items:center}
+.diffs button[aria-checked="true"].d1{border-color:#4cb85a;background:color-mix(in srgb,#4cb85a 12%,var(--paper))}
+.diffs button[aria-checked="true"].d2{border-color:#e0a020;background:color-mix(in srgb,#e0a020 14%,var(--paper))}
+.diffs button[aria-checked="true"].d3{border-color:#c2412f;background:color-mix(in srgb,#c2412f 12%,var(--paper))}
+.diffs button.fait small{color:#2f8f3e;font-weight:700}
+.diffs button:disabled{opacity:.5}

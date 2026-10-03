@@ -150,7 +150,7 @@ Ces textes sont un point de départ sérieux, pas un avis juridique : fais-les r
 
 | Commande | Ce qui est vérifié |
 |---|---|
-| `npm test` | 48 tests (mode Compagnon, progression RPG, instinct et coups ultimes, 60 étapes d'aventure reproductibles, dont le chiffrement des notifications, vérifié avec la bibliothèque de référence) : données des 1 135 espèces, cote identique à la base, saisons, moteur de combat (300 combats simulés, toujours terminés), règles d'abonnement Stripe |
+| `npm test` | 50 tests (mode Compagnon, progression RPG, instinct et coups ultimes, 60 étapes d'aventure reproductibles, dont le chiffrement des notifications, vérifié avec la bibliothèque de référence) : données des 1 135 espèces, cote identique à la base, saisons, moteur de combat (300 combats simulés, toujours terminés), règles d'abonnement Stripe |
 | `npm run test:db` | 178 tests sur une vraie base PostgreSQL : sécurité (RLS, anti-triche), safari, pellicules, premium, répartition des raretés sur 2 000 photos, fusions, enchères, collectionneurs, défis, combats, duels, succès, amis, guildes, notifications, modération, expérience et niveaux, aventure (étapes, étoiles, boss), suppression de compte |
 | `npm run test:e2e` | 78 étapes dans un vrai navigateur mobile, 2 joueurs : connexion, safari, fusion, enchère gagnée par l’autre joueur, aventure (carte, étoiles, expérience), combat sauvage, duel, défis, abonnement, tentative de triche |
 
@@ -195,6 +195,7 @@ Un autre jeu dans le jeu : le joueur ouvre une box et reçoit **un seul animal c
 
 - **Soins** : faim et bonheur baissent avec le temps réel. Nourrir coûte des **écus** (gagnés en aventure, en arène et avec le bonus du jour). Le repas adapté au régime donne beaucoup d'expérience ; un régime inadapté répété transforme l'animal (**traits** : Brouteur, Carnassier, Toxique, Pêcheur) et lui apprend une compétence spéciale.
 - **Compétences** : 1 point par niveau, 4 compétences actives + des passifs.
-- **Aventure** : les 60 étapes de l'Aventure, 2 adversaires au plus. **Arène** : duels contre les compagnons des autres joueurs (classement).
+- **Aventure** : les 60 étapes de l'Aventure, 2 adversaires au plus, chacune en 3 difficultés (★ facile, ★★ normal, ★★★ difficile : adversaires plus forts, gains ×1,7 et ×2,6). « Étape suivante » enchaîne directement.
+- **Camp d'entraînement (idle)** : l'animal gagne de l'XP et des écus même hors ligne (selon sa progression), stockage limité (4 h au départ) ; 3 améliorations payées en écus. **Arène** : duels contre les compagnons des autres joueurs (classement).
 - **Changer d'animal** : tous les 10 niveaux, nouvelle box (3 choix) ; niveau gardé, compétences et traits remis à zéro.
 - Version test : l'état est calculé dans l'appli (`src/game/compagnon.ts`) et sauvegardé tel quel (`compagnons`). Avant une vraie sortie, il faudra déplacer les règles (écus, expérience) côté serveur pour empêcher la triche.

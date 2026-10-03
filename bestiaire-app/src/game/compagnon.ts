@@ -89,6 +89,7 @@ export const MAX_ACTIVES = 4;
 // ---------------------------------------------------------------------
 // État du compagnon
 // ---------------------------------------------------------------------
+export interface Camp { xp: number; ecus: number; stock: number }
 export interface Compagnon {
   v: 1; espece: string; surnom: string; xp: number;
   faim: number; bonheur: number; maj: number;          // jauges 0..100, dernière mise à jour (ms)
@@ -96,6 +97,7 @@ export interface Compagnon {
   repas: Record<string, number>; traits: string[];     // compteurs de régime, traits obtenus
   aventure: Record<string, number>;                    // étoiles par étape
   dernierChangement: number; jeuA: number; bonusJour: string; victoires: number; defaites: number; rating: number;
+  camp?: Camp; recolte?: number;                     // camp d'entraînement (idle)
 }
 export const NIV_MAX = 50;
 // courbe d'expérience : plus douce que les cartes (un seul animal)
@@ -106,7 +108,7 @@ export const peutChanger = (c: Compagnon) => niveauC(c.xp) >= c.dernierChangemen
 
 export function nouveau(espece: string, surnom: string): Compagnon {
   const now = Date.now();
-  return { v: 1, espece, surnom, xp: 0, faim: 45, bonheur: 70, maj: now, ecus: 60, appris: ['griffes'], actives: ['griffes'], repas: {}, traits: [], aventure: {}, dernierChangement: 1, jeuA: 0, bonusJour: '', victoires: 0, defaites: 0, rating: 1000 };
+  return { v: 1, espece, surnom, xp: 0, faim: 45, bonheur: 70, maj: now, ecus: 60, appris: ['griffes'], actives: ['griffes'], repas: {}, traits: [], aventure: {}, dernierChangement: 1, jeuA: 0, bonusJour: '', victoires: 0, defaites: 0, rating: 1000, camp: { xp: 0, ecus: 0, stock: 0 }, recolte: now };
 }
 
 /** Le temps passe : la faim et le bonheur baissent (faim −4/h, bonheur −2/h) */
@@ -173,3 +175,55 @@ export function membre(c: Compagnon): Membre {
 export const MAX_ADVERSAIRES = 2;
 export const ecusEtape = (g: number, premiere: boolean) => (premiere ? 15 + 2 * g : 4 + Math.floor(g / 5));
 export const jour = (now = Date.now()) => new Date(now).toISOString().slice(0, 10);
+
+// ---------------------------------------------------------------------
+// Difficultés de l'aventure : ★ facile, ★★ normal, ★★★ difficile
+// (★★ s'ouvre après avoir gagné ★ sur la même étape, ★★★ après ★★ ; l'étape suivante s'ouvre dès ★)
+// ---------------------------------------------------------------------
+export const DIFFS = [
+  { n: 1, nom: 'Facile', niv: 0, mult: 1, gain: 1 },
+  { n: 2, nom: 'Normal', niv: 4, mult: 1.3, gain: 1.7 },
+  { n: 3, nom: 'Difficile', niv: 8, mult: 1.7, gain: 2.6 },
+] as const;
+export const diffOuverte = (c: Compagnon, g: number, d: number) => d === 1 || (c.aventure[g] || 0) >= d - 1;
+export function adversaires(foes: Membre[], d: number): Membre[] {
+  const D = DIFFS[d - 1];
+  return foes.slice(0, MAX_ADVERSAIRES).map(f => ({ ...f, niv: Math.min(60, (f.niv || 1) + D.niv), mult: Math.round(100 * (f.mult || 1) * D.mult) / 100 }));
+}
+/** Récompenses : pleines la première fois à chaque difficulté, réduites ensuite */
+export function gainsEtape(c: Compagnon, g: number, d: number, won: boolean) {
+  const D = DIFFS[d - 1], premiere = won && (c.aventure[g] || 0) < d;
+  if (!won) return { xp: 5, ecus: 2, premiere: false };
+  return { xp: Math.round((15 + 3 * g) * D.gain), ecus: Math.round(ecusEtape(g, premiere) * D.gain), premiere };
+}
+
+// ---------------------------------------------------------------------
+// Camp d'entraînement (idle) : ton animal s'entraîne même quand tu n'es pas là
+// ---------------------------------------------------------------------
+export const CAMP_MAX = 8;
+export const AMELIORATIONS: { k: keyof Camp; nom: string; desc: string; base: number }[] = [
+  { k: 'xp', nom: "Terrain d'entraînement", desc: "+25 % d'expérience par heure", base: 60 },
+  { k: 'ecus', nom: 'Spectacles', desc: '+25 % d’écus par heure', base: 60 },
+  { k: 'stock', nom: 'Grand enclos', desc: '+2 h de récolte stockée', base: 80 },
+];
+export const prixAmelioration = (k: keyof Camp, lvl: number) => AMELIORATIONS.find(a => a.k === k)!.base * 2 ** lvl;
+export const campDe = (c: Compagnon): Camp => c.camp || { xp: 0, ecus: 0, stock: 0 };
+export function rendement(c: Compagnon) {
+  const cp = campDe(c), p = Object.keys(c.aventure).length, faible = c.faim < 10;
+  const k = faible ? 0.5 : 1;
+  return { xpH: (8 + 1.5 * p) * (1 + 0.25 * cp.xp) * k, ecusH: (3 + 0.5 * p) * (1 + 0.25 * cp.ecus) * k, stockH: 4 + 2 * cp.stock, faible };
+}
+export function enAttente(c: Compagnon, now = Date.now()) {
+  const r = rendement(c), depuis = c.recolte || c.maj;
+  const h = Math.max(0, Math.min(r.stockH, (now - depuis) / 3.6e6));
+  return { h, xp: Math.floor(h * r.xpH), ecus: Math.floor(h * r.ecusH), plein: h >= r.stockH, ...r };
+}
+export function recolter(c: Compagnon, now = Date.now()): Compagnon {
+  const a = enAttente(c, now);
+  return { ...c, xp: c.xp + a.xp, ecus: c.ecus + a.ecus, recolte: now };
+}
+export function ameliorer(c: Compagnon, k: keyof Camp): Compagnon | null {
+  const r = recolter(c), cp = campDe(c), lvl = cp[k], prix = prixAmelioration(k, lvl);
+  if (lvl >= CAMP_MAX || r.ecus < prix) return null;
+  return { ...r, ecus: r.ecus - prix, camp: { ...cp, [k]: lvl + 1 } };
+}

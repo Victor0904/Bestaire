@@ -175,7 +175,7 @@ await A.locator('.pet').waitFor(); ok(await A.getByRole('heading', { name: 'Simb
 await A.getByRole('button', { name: /Nourrir/ }).click(); await A.locator('.food.ideal').first().click(); await A.waitForTimeout(300);
 ok(/écus/.test(await A.locator('.mg-head').innerText()) && !(await A.locator('.mg-head').innerText()).includes('60 écus'), 'repas payé en écus');
 await A.getByRole('button', { name: /←/ }).click(); await A.getByRole('button', { name: /Aventure/ }).click();
-await A.getByRole('button', { name: /Combattre avec/ }).click(); await A.getByRole('button', { name: /Auto/ }).click();
+await A.getByRole('button', { name: /^Combattre ·/ }).click(); await A.getByRole('button', { name: /Auto/ }).click();
 await A.locator('.a-end3').waitFor({ timeout: 90000 }); ok(true, 'combat d’aventure du compagnon terminé');
 await A.getByRole('button', { name: 'Retour' }).click(); await A.waitForTimeout(1600);
 ok((await db.query(`select surnom from compagnons where owner=$1`, [ua])).rows[0]?.surnom === 'Simba', 'compagnon sauvegardé en ligne');

@@ -5,7 +5,7 @@ import { Battle as B, mkFighter, newBattle } from '../game/combat';
 import { CHAPITRES, ETAPES_PAR_CHAPITRE, NB_ETAPES, etape, nomEtape } from '../game/adventure';
 import {
   ALIMENTS, Aliment, COMPETENCES, COMP, Compagnon as C, MAX_ACTIVES, MAX_ADVERSAIRES, STARS, TRAITS, Star,
-  adequation, apprendre, changer, ecusEtape, equiper, jouer, jour, membre, niveauC, nourrir, nouveau, peutChanger, points, star, vieillir, xpNiv, XP_REPAS,
+  adequation, adversaires, apprendre, changer, diffOuverte, gainsEtape, DIFFS, enAttente, recolter, ameliorer, rendement, campDe, prixAmelioration, AMELIORATIONS, CAMP_MAX, equiper, jouer, jour, membre, niveauC, nourrir, nouveau, peutChanger, points, star, vieillir, xpNiv, XP_REPAS,
 } from '../game/compagnon';
 import { api, CompagnonRow } from '../lib/api';
 import { useGame } from '../lib/store';
@@ -17,6 +17,9 @@ import { Arena, BIOME_GI, Fin } from './Arena';
 const KEY = (uid: string) => `bestiaire.compagnon.${uid}`;
 const REGIME: Record<string, string> = { carnivore: 'Carnivore', herbivore: 'Herbivore', omnivore: 'Omnivore', piscivore: 'Mange du poisson' };
 
+/** Anciennes sauvegardes : on ajoute le camp d'entraînement (sans compter le temps passé avant) */
+const norm = (c: C): C => ({ ...c, camp: c.camp || { xp: 0, ecus: 0, stock: 0 }, recolte: c.recolte ?? c.maj });
+
 /** Chargement / sauvegarde : téléphone d'abord, puis copie en ligne (pour les autres appareils et l'arène) */
 function useCompagnon() {
   const { uid } = useGame();
@@ -25,8 +28,8 @@ function useCompagnon() {
   const t = useRef<ReturnType<typeof setTimeout>>();
   useEffect(() => {
     let loc: C | null = null; try { loc = JSON.parse(localStorage.getItem(KEY(uid)) || 'null') } catch { /* rien */ }
-    setC(loc ? vieillir(loc) : null);
-    api.compagnonMien(uid).then(r => { setEnLigne(true); const d = r?.data as C | undefined; if (d && (!loc || d.maj > loc.maj)) setC(vieillir(d)) }).catch(() => setEnLigne(false));
+    setC(loc ? vieillir(norm(loc)) : null);
+    api.compagnonMien(uid).then(r => { setEnLigne(true); const d = r?.data as C | undefined; if (d && (!loc || d.maj > loc.maj)) setC(vieillir(norm(d))) }).catch(() => setEnLigne(false));
   }, [uid]);
   const save = useCallback((n: C | null) => {
     setC(n); if (!n) return;
@@ -59,7 +62,7 @@ export function Compagnon() {
       {vue === 'maison' && <Maison c={c} save={save} go={setVue} />}
       {vue === 'manger' && <Manger c={c} save={save} />}
       {vue === 'competences' && <Competences c={c} save={save} />}
-      {vue === 'aventure' && <AventureC c={c} save={save} lancer={lancer} fermer={() => setCombat(null)} />}
+      {vue === 'aventure' && <AventureC c={c} save={save} lancer={lancer} />}
       {vue === 'arene' && <AreneC c={c} save={save} lancer={lancer} enLigne={enLigne} />}
       {vue === 'changer' && <BoxScreen titre="Nouvelle box" sous={`Choisis ton nouvel animal. ${c.surnom} part en retraite : tu gardes ton niveau, tes écus et ta progression, mais tes compétences et tes traits repartent de zéro.`} choix={3} exclure={c.espece}
         onPick={(st, nom) => { save(changer(c, st.id, nom)); setVue('maison'); toast(`${nom} prend la relève !`) }} />}
@@ -121,6 +124,7 @@ function Maison({ c, save, go }: { c: C; save: (c: C) => void; go: (v: Vue) => v
         <Gauge ic="🍖" nom="Faim" v={c.faim} warn={c.faim < 25 ? 'Affamé : −20 % en combat' : ''} />
         <Gauge ic="💛" nom="Bonheur" v={c.bonheur} warn={c.bonheur > 70 ? 'Heureux : +5 % en combat' : ''} />
       </div>
+      <CampCard c={c} save={save} />
       {bonus && <button className="btn primary daily" onClick={() => { save({ ...c, ecus: c.ecus + 25, bonusJour: jour() }); sfx.etoile(2); toast('+25 écus') }}><GI n="coffreOuvert" /> Bonus du jour : +25 écus</button>}
       <div className="pet-actions">
         <button onClick={() => go('manger')}><span className="em">🍽️</span><b>Nourrir</b><small>{c.faim < 50 ? 'Il a faim' : 'Repas adapté = plus d’XP'}</small></button>
@@ -144,6 +148,24 @@ function Maison({ c, save, go }: { c: C; save: (c: C) => void; go: (v: Vue) => v
         <p><b>Changer d'animal.</b> Tous les 10 niveaux, une nouvelle box : tu gardes ton niveau, tes compétences repartent de zéro.</p>
       </details>
     </>
+  );
+}
+function CampCard({ c, save }: { c: C; save: (c: C) => void }) {
+  const { toast } = useGame();
+  const [, tick] = useState(0); const [ouvert, setOuvert] = useState(false);
+  useEffect(() => { const i = setInterval(() => tick(x => x + 1), 5000); return () => clearInterval(i) }, []);
+  const a = enAttente(c), cp = campDe(c), fmt = (x: number) => x.toLocaleString('fr-FR', { maximumFractionDigits: 1 });
+  const recolte = () => { if (!a.xp && !a.ecus) return toast('Rien à récolter pour l’instant'); const n = recolter(c); save(n); sfx.etoile(1); toast(`+${a.xp} XP · +${a.ecus} écus`); if (niveauC(n.xp) > niveauC(c.xp)) setTimeout(() => sfx.niveau(), 300) };
+  return (
+    <div className={`camp ${a.plein ? 'plein' : ''}`}>
+      <div className="camp-h"><span className="em">🏕️</span><div><b>Camp d'entraînement</b><small>{c.surnom} s'entraîne même quand tu n'es pas là · {fmt(a.xpH)} XP/h · {fmt(a.ecusH)} écus/h</small></div></div>
+      <div className="camp-g"><div className="gbar"><i style={{ width: `${Math.round((100 * a.h) / a.stockH)}%` }} /></div><small>{a.plein ? 'Plein ! Récolte vite' : `${fmt(a.h)} h / ${a.stockH} h`}</small></div>
+      {a.faible && <p className="note warn">Il a trop faim : il s'entraîne deux fois moins bien.</p>}
+      <div className="row"><button className="btn primary" onClick={recolte}>Récolter +{a.xp} XP · +{a.ecus} écus</button><button className="btn ghost small" onClick={() => setOuvert(!ouvert)} aria-expanded={ouvert}>Améliorer</button></div>
+      {ouvert && <div className="upg">{AMELIORATIONS.map(u => { const lvl = cp[u.k], prix = prixAmelioration(u.k, lvl), max = lvl >= CAMP_MAX;
+        return <div key={u.k} className="upg-l"><span><b>{u.nom} <small>niv. {lvl}/{CAMP_MAX}</small></b><small>{u.desc}</small></span>
+          <button className="btn small" disabled={max || c.ecus + a.ecus < prix} onClick={() => { const n = ameliorer(c, u.k); if (n) { save(n); sfx.buff(); toast(`${u.nom} amélioré !`) } }}>{max ? 'Max' : `${prix} écus`}</button></div> })}</div>}
+    </div>
   );
 }
 function Gauge({ ic, nom, v, warn }: { ic: string; nom: string; v: number; warn: string }) {
@@ -204,24 +226,27 @@ function Competences({ c, save }: { c: C; save: (c: C) => void }) {
 // ---------------------------------------------------------------------
 // Aventure du compagnon (mêmes étapes que l'Aventure, 2 adversaires au plus)
 // ---------------------------------------------------------------------
-function AventureC({ c, save, lancer, fermer }: { c: C; save: (c: C) => void; lancer: (b: B, onFin: (b: B) => Promise<Fin>) => void; fermer: () => void }) {
+function AventureC({ c, save, lancer }: { c: C; save: (c: C) => void; lancer: (b: B, onFin: (b: B) => Promise<Fin>) => void }) {
   const prochaine = Math.min(NB_ETAPES - 1, Object.keys(c.aventure).length);
   const [sel, setSel] = useState<number>(prochaine);
-  const e = etape(sel), foes = e.genre === 'boss' ? e.foes.slice(-MAX_ADVERSAIRES) : e.foes.slice(0, MAX_ADVERSAIRES);
-  const go = () => {
-    const b = newBattle([membre(c)], foes, e.biome, e.ph);
-    b.log.push({ t: 'sys', m: `${e.chap.nom} · ${nomEtape(e)}` });
+  const [diff, setDiff] = useState(1);
+  const e = etape(sel), d = diffOuverte(c, sel, diff) ? diff : 1, foes = adversaires(e.genre === 'boss' ? e.foes.slice(-MAX_ADVERSAIRES) : e.foes, d), g0 = gainsEtape(c, sel, d, true);
+  // lance l'étape g en difficulté dd avec l'état cc (utilisé aussi par « Étape suivante » pour enchaîner directement)
+  const jouerEtape = (g: number, dd: number, cc: C) => {
+    const et = etape(g), fs = adversaires(et.genre === 'boss' ? et.foes.slice(-MAX_ADVERSAIRES) : et.foes, dd);
+    const b = newBattle([membre(cc)], fs, et.biome, et.ph);
+    b.log.push({ t: 'sys', m: `${et.chap.nom} · ${nomEtape(et)} · ${DIFFS[dd - 1].nom}` });
+    setSel(g); setDiff(dd);
     lancer(b, async (bt) => {
-      const pv = bt.P[0].hp / bt.P[0].maxHp, et = !bt.won ? 0 : 1 + (pv >= 0.5 ? 1 : 0) + (bt.round - 1 <= e.toursMax ? 1 : 0);
-      const premiere = !c.aventure[sel], ec = bt.won ? ecusEtape(sel, premiere) : 2, xp = bt.won ? 15 + 3 * sel : 5;
-      const avant = niveauC(c.xp);
-      const n: C = { ...c, xp: c.xp + xp, ecus: c.ecus + ec, faim: Math.max(0, c.faim - 6), bonheur: Math.min(100, c.bonheur + (bt.won ? 4 : -4)),
-        aventure: bt.won ? { ...c.aventure, [sel]: Math.max(et, c.aventure[sel] || 0) } : c.aventure, victoires: c.victoires + (bt.won ? 1 : 0), defaites: c.defaites + (bt.won ? 0 : 1) };
+      const r = gainsEtape(cc, g, dd, !!bt.won), avant = niveauC(cc.xp);
+      const n: C = { ...cc, xp: cc.xp + r.xp, ecus: cc.ecus + r.ecus, faim: Math.max(0, cc.faim - 6), bonheur: Math.min(100, cc.bonheur + (bt.won ? 4 : -4)),
+        aventure: bt.won ? { ...cc.aventure, [g]: Math.max(dd, cc.aventure[g] || 0) } : cc.aventure, victoires: cc.victoires + (bt.won ? 1 : 0), defaites: cc.defaites + (bt.won ? 0 : 1) };
       save(n);
       const apres = niveauC(n.xp);
-      return { titre: bt.won ? (e.genre === 'boss' ? 'Boss vaincu !' : 'Victoire') : 'Défaite', etoiles: bt.won ? et : undefined,
-        lignes: [`+${xp} XP · +${ec} écus${premiere && bt.won ? ' (première victoire)' : ''}`, apres > avant ? `${c.surnom} passe au niveau ${apres} ! +1 point de compétence` : `Niveau ${apres}`, ...(c.faim < 25 ? ['Il avait faim : nourris-le pour être plus fort.'] : [])],
-        suite: bt.won && sel + 1 < NB_ETAPES ? { label: 'Étape suivante', go: () => { setSel(sel + 1); fermer() } } : undefined };
+      return { titre: bt.won ? (et.genre === 'boss' ? 'Boss vaincu !' : `Victoire · ${DIFFS[dd - 1].nom}`) : 'Défaite', etoiles: bt.won ? dd : undefined,
+        lignes: [`+${r.xp} XP · +${r.ecus} écus${r.premiere ? ' (première victoire)' : ''}`, apres > avant ? `${cc.surnom} passe au niveau ${apres} ! +1 point de compétence` : `Niveau ${apres}`,
+          ...(bt.won && dd < 3 ? [`La difficulté ${'★'.repeat(dd + 1)} ${DIFFS[dd].nom.toLowerCase()} est ouverte sur cette étape.`] : []), ...(cc.faim < 25 ? ['Il avait faim : nourris-le pour être plus fort.'] : [])],
+        suite: bt.won && g + 1 < NB_ETAPES ? { label: 'Étape suivante', go: () => jouerEtape(g + 1, 1, n) } : { label: 'Réessayer', go: () => jouerEtape(g, dd, n) } };
     });
   };
   return (
@@ -230,12 +255,15 @@ function AventureC({ c, save, lancer, fermer }: { c: C; save: (c: C) => void; la
       {CHAPITRES.map((ch, ci) => { const g0 = ci * ETAPES_PAR_CHAPITRE; if (g0 > prochaine) return <div key={ch.n} className="chapc ferme"><GI n="cadenas" /> Chapitre {ch.n} · {ch.nom}</div>;
         return <div key={ch.n} className={`chapc b-${ch.biome}`}><div className="chapc-h"><GI n={BIOME_GI[ch.biome]} /> <b>{ch.nom}</b></div>
           <div className="stg">{Array.from({ length: ETAPES_PAR_CHAPITRE }, (_, k) => { const g = g0 + k, et = c.aventure[g] || 0, ok = g <= prochaine;
-            return <button key={g} disabled={!ok} aria-pressed={g === sel} className={`${k === 9 ? 'boss' : k === 4 ? 'elite' : ''} ${et ? 'fait' : ''}`} onClick={() => setSel(g)}>
+            return <button key={g} disabled={!ok} aria-pressed={g === sel} className={`${k === 9 ? 'boss' : k === 4 ? 'elite' : ''} ${et ? 'fait' : ''}`} onClick={() => { setSel(g); setDiff(Math.min(3, (c.aventure[g] || 0) + 1)) }}>
               {!ok ? <GI n="cadenas" /> : k === 9 ? <GI n="boss" /> : k === 4 ? <GI n="elite" /> : k + 1}{et > 0 && <small>{'★'.repeat(et)}</small>}</button> })}</div></div> })}
       <div className="panel prepc"><p className="eyebrow">{e.chap.nom} · {e.ph}</p><h3>{nomEtape(e)}</h3>
+        <div className="diffs" role="radiogroup" aria-label="Difficulté">{DIFFS.map(D => { const ok = diffOuverte(c, sel, D.n), fait = (c.aventure[sel] || 0) >= D.n;
+          return <button key={D.n} role="radio" aria-checked={d === D.n} disabled={!ok} className={`d${D.n} ${fait ? 'fait' : ''}`} onClick={() => setDiff(D.n)}>
+            <span>{'★'.repeat(D.n)}</span><b>{D.nom}</b><small>{!ok ? <><GI n="cadenas" /> gagne {'★'.repeat(D.n - 1)}</> : fait ? 'Réussie' : `gains ×${D.gain.toLocaleString('fr-FR')}`}</small></button> })}</div>
         <div className="foes">{foes.map((f, i) => <div key={i} className={`foe t${f.s.tier} ${f.boss ? 'boss' : ''}`}><span className="spr" style={photoRond(f.s) || undefined} />{f.boss && <GI n="couronne" className="crown" />}<b>{f.s.nom}</b><small>Niv. {f.niv}</small></div>)}</div>
-        <p className="note">★ victoire · ★★ en gardant la moitié de ses PV · ★★★ en {e.toursMax} tours maximum. Récompense : +{15 + 3 * sel} XP, +{ecusEtape(sel, !c.aventure[sel])} écus.</p>
-        <button className="btn primary big" onClick={go}><GI n="combat" /> Combattre avec {c.surnom}</button></div>
+        <p className="note">Récompense : +{g0.xp} XP, +{g0.ecus} écus{g0.premiere ? ' (première victoire à cette difficulté)' : ''}.</p>
+        <button className="btn primary big" onClick={() => jouerEtape(sel, d, c)}><GI n="combat" /> Combattre · {'★'.repeat(d)} {DIFFS[d - 1].nom}</button></div>
     </div>
   );
 }
