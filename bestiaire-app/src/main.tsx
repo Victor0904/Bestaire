@@ -3,6 +3,7 @@ import { createRoot } from 'react-dom/client';
 import App from './App';
 import './styles.css';
 import './app.css';
+import './rpg.css';
 import { applyTheme } from './lib/theme';
 
 applyTheme();

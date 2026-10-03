@@ -18,10 +18,11 @@ Toute la logique qui compte (tirages, fusions, plumes, enchères, abonnement) s'
 3. Nouvelle requête : colle `supabase/seed.sql` (les 1 135 espèces) → **Run**.
 4. Nouvelle requête : colle `supabase/migrations/20261002000002_social.sql` (succès, amis, guildes, suppression de compte) → **Run**.
 5. Nouvelle requête : colle `supabase/migrations/20261002000003_notif_moderation.sql` (notifications, modération) → **Run**.
-   Ces fichiers s'exécutent **toujours dans l'ordre 1 → 2 → 3**. Si tu en relances un, relance aussi les suivants.
+6. Nouvelle requête : colle `supabase/migrations/20261003000004_aventure_rpg.sql` (expérience, niveaux, Aventure) → **Run**.
+   Ces fichiers s'exécutent **toujours dans l'ordre 1 → 2 → 3 → 4**. Si tu en relances un, relance aussi les suivants.
 6. Vérification rapide : `select count(*) from species;` doit renvoyer **1135**, et `select * from cron.job;` doit montrer `bestiaire-settle-auctions`.
 
-> **Mise à jour d'une base existante** : relance `…001_schema.sql`, puis `…002_social.sql`, puis `…003_notif_moderation.sql`, sans toucher au seed.
+> **Mise à jour d'une base existante** : relance `…001_schema.sql`, puis `…002_social.sql`, puis `…003_notif_moderation.sql`, puis `…004_aventure_rpg.sql`, sans toucher au seed.
 > Les fichiers peuvent être relancés sans risque (mise à jour sans perte de données).
 > `supabase/tests/00_fake_supabase.sql` sert uniquement aux tests locaux : **ne pas l'exécuter sur Supabase**.
 
@@ -148,9 +149,9 @@ Ces textes sont un point de départ sérieux, pas un avis juridique : fais-les r
 
 | Commande | Ce qui est vérifié |
 |---|---|
-| `npm test` | 27 tests (dont le chiffrement des notifications, vérifié avec la bibliothèque de référence) : données des 1 135 espèces, cote identique à la base, saisons, moteur de combat (300 combats simulés, toujours terminés), règles d'abonnement Stripe |
-| `npm run test:db` | 150 tests sur une vraie base PostgreSQL : sécurité (RLS, anti-triche), safari, pellicules, premium, répartition des raretés sur 2 000 photos, fusions, enchères, collectionneurs, défis, combats, duels, succès, amis, guildes, notifications, modération, suppression de compte |
-| `npm run test:e2e` | 65 étapes dans un vrai navigateur mobile, 2 joueurs : connexion, safari, fusion, enchère gagnée par l'autre joueur, combats, duel, défis, abonnement, tentative de triche |
+| `npm test` | 40 tests (progression RPG, instinct et coups ultimes, 60 étapes d'aventure reproductibles, dont le chiffrement des notifications, vérifié avec la bibliothèque de référence) : données des 1 135 espèces, cote identique à la base, saisons, moteur de combat (300 combats simulés, toujours terminés), règles d'abonnement Stripe |
+| `npm run test:db` | 169 tests sur une vraie base PostgreSQL : sécurité (RLS, anti-triche), safari, pellicules, premium, répartition des raretés sur 2 000 photos, fusions, enchères, collectionneurs, défis, combats, duels, succès, amis, guildes, notifications, modération, expérience et niveaux, aventure (étapes, étoiles, boss), suppression de compte |
+| `npm run test:e2e` | 73 étapes dans un vrai navigateur mobile, 2 joueurs : connexion, safari, fusion, enchère gagnée par l’autre joueur, aventure (carte, étoiles, expérience), combat sauvage, duel, défis, abonnement, tentative de triche |
 
 `test:db` et `test:e2e` demandent un PostgreSQL local et la passerelle de test (`tests/gateway.mjs`) : ils sont faits pour Linux/CI, pas besoin de les lancer sur ton PC.
 
@@ -176,3 +177,13 @@ supabase/functions/      paiement Stripe (Checkout, portail client, webhook)
 - Les combats se jouent sur le téléphone ; le serveur plafonne les gains (30 récompenses de combat et 20 duels par jour, 400 plumes maximum par victoire). Un tricheur motivé pourrait gagner tous ses combats, sans jamais dépasser ces plafonds.
 - 31 espèces françaises n'ont pas encore de photo exacte : elles sont exclues des tirages tant qu'il n'y en a pas.
 - Les photos restent sous licences Creative Commons : les crédits sont affichés sur chaque fiche, il faut les conserver.
+
+## Aventure et progression RPG
+
+- **Aventure** (onglet Combat) : 6 chapitres (prairie, forêt, marais, côte, montagne, ville la nuit) de 10 étapes, avec une étape « élite » et un boss par chapitre. Étoiles : ★ victoire, ★★ sans perdre d'animal, ★★★ en peu de tours. Première victoire : plumes ; boss : +100 plumes et 1 pellicule ; 3 étoiles : +15 plumes.
+- **Niveaux** : les combats donnent de l'expérience (60 combats récompensés par jour). Le **rang** (étoiles obtenues par fusion) fixe le niveau maximum : 10 à ★ … 40 à ★★★★★★★.
+- **Instinct sauvage** : dès le niveau 3, une jauge se remplit en frappant et en encaissant ; pleine, elle libère un coup ultime propre à la classe de l'animal.
+- **Arène** : rangs Bronze → Argent → Or → Diamant → Légende selon le classement.
+- Les formules (niveaux, récompenses) existent côté jeu (`src/game/rpg.ts`, `src/game/adventure.ts`) et côté base (`g_niv`, `adventure_win`) : les garder identiques.
+
+**Ressources libres utilisées** : icônes [game-icons.net](https://game-icons.net) (CC BY 3.0, crédit dans les mentions légales) ; décors SVG, effets de particules (canvas) et sons (Web Audio) créés pour le jeu, sans fichier externe.

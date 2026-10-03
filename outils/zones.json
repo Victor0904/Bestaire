@@ -1,0 +1,11 @@
+{
+  "FR":  { "nom": "France", "pays": ["FR", "MC"] },
+  "EU":  { "nom": "Europe", "pays": ["AD","AL","AT","AX","BA","BE","BG","BY","CH","CY","CZ","DE","DK","EE","ES","FI","FO","GB","GG","GI","GR","HR","HU","IE","IM","IS","IT","JE","LI","LT","LU","LV","MD","ME","MK","MT","NL","NO","PL","PT","RO","RS","RU","SE","SI","SJ","SK","SM","UA","VA"], "sansCollecte": ["RU"] },
+  "AN":  { "nom": "Afrique du Nord et Moyen-Orient", "pays": ["MA","DZ","TN","LY","EG","EH","MR","TR","IL","PS","JO","LB","SY","IQ","IR","SA","AE","OM","YE","KW","QA","BH","GE","AM","AZ"] },
+  "AF":  { "nom": "Afrique subsaharienne", "pays": ["AO","BF","BI","BJ","BW","CD","CF","CG","CI","CM","CV","DJ","ER","ET","GA","GH","GM","GN","GQ","GW","KE","KM","LR","LS","MG","ML","MU","MW","MZ","NA","NE","NG","RE","RW","SC","SD","SH","SL","SN","SO","SS","ST","SZ","TD","TG","TZ","UG","YT","ZA","ZM","ZW","IO","TF","BV"] },
+  "AMN": { "nom": "Amérique du Nord", "pays": ["US","CA","PM","BM","GL"] },
+  "AML": { "nom": "Amérique latine et Caraïbes", "pays": ["MX","GT","BZ","SV","HN","NI","CR","PA","CU","DO","HT","JM","PR","BS","TC","KY","VG","VI","AI","AG","KN","MS","DM","LC","VC","BB","GD","TT","AW","CW","BQ","SX","MF","BL","GP","MQ","CO","VE","GY","SR","GF","EC","PE","BO","BR","PY","UY","AR","CL","FK","GS"] },
+  "AE":  { "nom": "Asie du Nord et de l'Est", "pays": ["CN","JP","KR","KP","TW","MN","KZ","KG","TJ","UZ","TM","HK","MO"] },
+  "AS":  { "nom": "Asie du Sud et du Sud-Est", "pays": ["IN","PK","BD","LK","NP","BT","MV","AF","MM","TH","LA","KH","VN","MY","SG","ID","PH","BN","TL","CC","CX"] },
+  "OC":  { "nom": "Océanie", "pays": ["AU","NZ","PG","NC","PF","WF","FJ","VU","SB","WS","AS","TO","CK","NU","TK","TV","KI","NR","MH","FM","PW","GU","MP","PN","NF","HM"] }
+}

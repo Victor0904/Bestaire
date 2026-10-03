@@ -11,10 +11,11 @@ const SLIDES = [
     <p className="tiers"><span className="rbadge t0">commun</span><span className="rbadge t1">peu commun</span><span className="rbadge t2">rare</span><span className="rbadge t3">épique</span><span className="rbadge t4">légendaire</span></p></> },
   { k: 'fusion', t: 'Collection et fusion', ic: '⇪', body: <>
     <p>Chaque photo a une <b>qualité</b> : floue, nette, superbe ou parfaite.</p>
-    <p>Deux exemplaires du même niveau se <b>fusionnent</b> en un niveau supérieur (jusqu'au niveau 7). La meilleure photo est gardée, et le niveau reste quand tu revends.</p>
+    <p>Deux exemplaires du même rang se <b>fusionnent</b> en un rang supérieur (jusqu'à 7 étoiles). La meilleure photo est gardée, et le niveau maximum de l'animal monte.</p>
     <p>Dans le <b>Bestiaire</b>, les filtres t'indiquent quelles espèces chercher en ce moment.</p></> },
-  { k: 'combat', t: 'Combats et marché', ic: '⚔', body: <>
-    <p>Forme une équipe de 3 animaux. La <b>chaîne alimentaire</b> compte (un prédateur fait ×1,5 contre ses proies), tout comme le milieu et l'heure.</p>
+  { k: 'combat', t: 'Aventure, combats et marché', ic: '⚔', body: <>
+    <p>Forme une équipe de 3 animaux et lance-toi dans l'<b>Aventure</b> : 6 chapitres, des boss, des étoiles à gagner. Tes animaux prennent des <b>niveaux</b> et débloquent leur <b>instinct sauvage</b>, un coup ultime.</p>
+    <p>La <b>chaîne alimentaire</b> compte (un prédateur fait ×1,5 contre ses proies), tout comme le milieu et l'heure.</p>
     <p>Au <b>marché</b>, vends aux enchères et achète des espèces du monde entier, qui valent plus cher.</p></> },
   { k: 'social', t: 'Amis et guildes', ic: '♥', body: <>
     <p>Ajoute tes amis avec leur <b>code ami</b>, regarde leurs plus belles cartes et défie-les en duel.</p>

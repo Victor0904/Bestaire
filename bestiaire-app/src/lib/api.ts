@@ -19,13 +19,16 @@ export interface GuildSummary { id: number; name: string; tag: string; descr: st
 export interface GuildMember { id: string; pseudo: string; role: 'chef' | 'officier' | 'membre'; rating: number; species: number; week: number; last_seen: string | null }
 export interface GuildMessage { id: number; user_id: string | null; pseudo: string | null; body: string; at: string }
 export interface Guild { id: number; name: string; tag: string; descr: string; emblem: string | null; open: boolean; role: GuildMember['role']; claimed: boolean | null; week: { photos: number; goal: number; members: number }; members: GuildMember[]; messages: GuildMessage[] }
-export interface Card { id: number; species_id: string; q: number; lvl: number; biome: string | null; phase: string | null; status: 'owned' | 'auction'; created_at?: string }
+export interface Card { id: number; species_id: string; q: number; lvl: number; xp?: number; biome: string | null; phase: string | null; status: 'owned' | 'auction'; created_at?: string }
 export interface Shot { id: number; species_id: string; q: number; lvl: number; biome: string; phase: string; is_new: boolean }
 export interface FuseResult { id: number; species_id: string; q: number; lvl: number; up: boolean; a: { q: number; lvl: number }; b: { q: number; lvl: number } }
 export interface Auction { id: number; seller: string; card_id: number; species_id: string; q: number; lvl: number; start_price: number; buy_now: number | null; ends_at: string; status: string; best_bid: number | null; best_bidder: string | null; bids: number }
 export interface BotOffer { id: number; species_id: string; q: number; lvl: number; price: number; seller: string; pays: string; expires_at: string }
 export interface Sale { species_id: string; lvl: number; q: number; price: number; at: string }
-export interface Defense { owner: string; team: { species_id: string; lvl: number; q: number }[]; rating: number; pseudo: string | null; updated_at: string }
+export interface Defense { owner: string; team: { species_id: string; lvl: number; q: number; niv?: number }[]; rating: number; pseudo: string | null; updated_at: string }
+
+export interface XpResult { cap: boolean; cards: { id: number; xp: number; niv: number; avant: number }[] }
+export interface AdvResult { stars: number; first?: boolean; plumes: number; film: boolean; xp: XpResult; adv: Record<string, number> }
 
 /** Message d'erreur lisible (les fonctions serveur renvoient des messages en français) */
 export const errMsg = (e: unknown) => (e && typeof e === 'object' && 'message' in e ? String((e as { message: string }).message) : 'Une erreur est survenue');
@@ -48,6 +51,9 @@ export const api = {
   claimQuest: (i: number) => rpc<{ plumes?: number; films?: number }>('claim_quest', { p_index: i }),
   battleReward: (won: boolean, foes: string[], lvls: number[]) => rpc<{ gain: number; bonus: boolean; cap?: boolean }>('battle_reward', { p_won: won, p_foes: foes, p_lvls: lvls }),
   saveDefense: (cards: number[]) => rpc<void>('save_defense', { p_cards: cards }),
+  battleXp: (cards: number[], won: boolean) => rpc<XpResult>('battle_xp', { p_cards: cards, p_won: won }),
+  adventureState: () => rpc<{ adv: Record<string, number>; xp_count: number }>('adventure_state'),
+  adventureWin: (stage: number, won: boolean, stars: number, cards: number[]) => rpc<AdvResult>('adventure_win', { p_stage: stage, p_won: won, p_stars: stars, p_cards: cards }),
   achievements: () => rpc<Achievement[]>('get_achievements'),
   claimAchievement: (code: string) => rpc<{ plumes: number; films: number }>('claim_achievement', { p_code: code }),
   friends: () => rpc<{ code: string; list: Friend[] }>('get_friends'),
@@ -84,7 +90,7 @@ export const api = {
   async cards(): Promise<Card[]> {
     const all: Card[] = [];
     for (let from = 0; ; from += 1000) {
-      const { data, error } = await supabase.from('cards').select('id,species_id,q,lvl,biome,phase,status,created_at').order('id').range(from, from + 999);
+      const { data, error } = await supabase.from('cards').select('id,species_id,q,lvl,xp,biome,phase,status,created_at').order('id').range(from, from + 999);
       if (error) throw error; all.push(...(data as Card[])); if (!data || data.length < 1000) break;
     }
     return all;

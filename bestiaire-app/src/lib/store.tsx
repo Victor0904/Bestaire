@@ -1,3 +1,4 @@
+import { niveau } from '../game/rpg';
 import { createContext, ReactNode, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import type { Session } from '@supabase/supabase-js';
 import { supabase } from './supabase';
@@ -77,5 +78,7 @@ export function GameProvider({ session, children }: { session: Session; children
   return <GameCtx.Provider value={{ session, uid: session.user.id, state, cards, bySpecies, refresh, refreshCards, toast, toastMsg, run, tab, go, challenge, setChallenge, badges, refreshSocial, sub, setSub, notifs, refreshNotifs, openTab }}>{children}</GameCtx.Provider>;
 }
 
-export const bestCard = (c: Card[]) => c.reduce((a, b) => (b.lvl > a.lvl || (b.lvl === a.lvl && b.q > a.q) ? b : a), c[0]);
+/** Meilleur exemplaire : niveau (expérience), puis rang, puis qualité */
+export const nivCarte = (c: Card) => niveau(c.xp || 0, c.lvl);
+export const bestCard = (c: Card[]) => c.reduce((a, b) => { const na = nivCarte(a), nb = nivCarte(b); return nb > na || (nb === na && (b.lvl > a.lvl || (b.lvl === a.lvl && b.q > a.q))) ? b : a }, c[0]);
 export { supabase };

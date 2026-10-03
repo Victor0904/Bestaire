@@ -43,6 +43,7 @@ function Mentions() {
     <p><b>Paiements</b> : Stripe Payments Europe, Ltd., Dublin, Irlande (stripe.com).</p>
     <h3>Contenus</h3>
     <p>Données sur les espèces : GBIF et Wikidata. Photographies : contributeurs d'iNaturalist, sous licences Creative Commons ; l'auteur et la licence de chaque photo sont indiqués sur sa fiche, avec un lien vers l'original.</p>
+    <p>Icônes du jeu : <a href="https://game-icons.net" target="_blank" rel="noopener">game-icons.net</a> (Lorc, Delapouite et contributeurs), licence <a href="https://creativecommons.org/licenses/by/3.0/deed.fr" target="_blank" rel="noopener">CC BY 3.0</a>. Décors, effets visuels et sons : créés pour Bestiaire (dessin et synthèse sonore dans le navigateur).</p>
     <p>Le jeu, son code et ses textes sont la propriété de l'éditeur, sauf les contenus tiers ci-dessus qui restent soumis à leurs licences.</p>
   </>;
 }

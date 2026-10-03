@@ -131,7 +131,7 @@ describe('combat : effets et événements d’animation', () => {
         const before = [...B.P, ...B.E].map(f => f.hp);
         playTurn(B, ai(B.P[B.pi], rng), rng);
         expect(B.ev!.length).toBeGreaterThan(0);
-        expect(B.ev!.some(e => e.k === 'act' || e.k === 'skip' || e.k === 'switch')).toBe(true);
+        expect(B.ev!.some(e => e.k === 'act' || e.k === 'ult' || e.k === 'skip' || e.k === 'switch')).toBe(true);
         for (const e of B.ev!) if (e.k === 'hit') { expect(e.amt).toBeGreaterThanOrEqual(0); expect(e.hp).toBeGreaterThanOrEqual(0) }
         expect([...B.P, ...B.E].some((f, i) => f.hp !== before[i]) || B.ev!.some(e => e.k !== 'hit')).toBe(true);
       }

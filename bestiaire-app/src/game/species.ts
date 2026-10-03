@@ -54,6 +54,17 @@ export function photoStyle(s: Species): React.CSSProperties | null {
   };
 }
 
+/** Même photo, recadrée pour un conteneur carré (portrait rond) sans déformation */
+export function photoRond(s: Species): React.CSSProperties | null {
+  if (!s.photo) return null;
+  const [sheet, i] = s.photo, c = i % 5, r = Math.floor(i / 5);
+  return {
+    backgroundImage: `url(${import.meta.env.BASE_URL}planches/p${String(sheet).padStart(2, '0')}.webp)`,
+    backgroundSize: 'auto 800%',
+    backgroundPosition: `${(((4 / 3) * c + 1 / 6) / (17 / 3)) * 100}% ${((r * 100) / 7).toFixed(3)}%`,
+  };
+}
+
 export function seasonText(s: Species): string {
   if (!s.months) return "toute l'année";
   const has = new Set(s.months); const segs: string[] = [];

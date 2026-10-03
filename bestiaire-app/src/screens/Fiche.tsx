@@ -1,8 +1,9 @@
 import { useState } from 'react';
 import { ACT, BIOME, BYID, CLASS, FRAME, FRAMEN, MAXLVL, QUAL, cote, massText, qIndex, seasonText } from '../game/species';
-import { ARCH, EFF, abilities, statsAt } from '../game/combat';
+import { ARCH } from '../game/combat';
+import { RpgPanel } from '../components/RpgPanel';
 import { api, Card, FuseResult } from '../lib/api';
-import { bestCard, useGame } from '../lib/store';
+import { bestCard, nivCarte, useGame } from '../lib/store';
 import { Print, Sheet } from '../components/ui';
 import { FusionFX } from '../components/FusionFX';
 import { shareCard } from '../lib/share';
@@ -15,7 +16,7 @@ export function Fiche({ id, onClose }: { id: string; onClose: () => void }) {
   const [sharing, setSharing] = useState(false);
   if (fx) return <FusionFX s={s} r={fx} onClose={() => setFx(null)} />;
   if (sell && c.length) return <SellSheet id={id} onClose={() => setSell(false)} />;
-  const best = c.length ? bestCard(c) : null; const lvl = best?.lvl || 1; const t = statsAt(s, lvl);
+  const best = c.length ? bestCard(c) : null;
   const byLvl: Record<number, Card[]> = {}; c.forEach(x => (byLvl[x.lvl] ||= []).push(x));
   const counts = [0, 0, 0, 0]; c.forEach(x => counts[qIndex(x.q)]++);
   const wished = state?.wishes?.includes(id);
@@ -27,7 +28,7 @@ export function Fiche({ id, onClose }: { id: string; onClose: () => void }) {
   const toggleWish = async () => { const w = new Set(state?.wishes || []); wished ? w.delete(id) : w.add(id); await run(api.setProfile(uid, { wishes: [...w] })); refresh(); toast(wished ? 'Espèce retirée de ta liste' : 'Tu seras prévenu au marché') };
   return (
     <Sheet onClose={onClose} label={s.nom}>
-      {best ? <Print s={s} q={best.q} lvl={best.lvl} phase={best.phase} /> : <Print s={s} q={50} lvl={1} />}
+      {best ? <Print s={s} q={best.q} lvl={best.lvl} phase={best.phase} niv={nivCarte(best)} /> : <Print s={s} q={50} lvl={1} />}
       <div className="facts"><dl>
         <dt>Classe</dt><dd>{CLASS[s.classe]}</dd>
         <dt>{s.pays ? 'Pays' : 'Milieux'}</dt><dd>{s.pays || s.biomes.map(b => BIOME[b].n).join(', ')}</dd>
@@ -38,12 +39,11 @@ export function Fiche({ id, onClose }: { id: string; onClose: () => void }) {
         <dt>Profil</dt><dd>{ARCH[s.arch].n}</dd>
         <dt>Photos</dt><dd>{c.length} exemplaire{c.length > 1 ? 's' : ''}</dd>
       </dl></div>
-      <div className="stats">{(['pv', 'att', 'def', 'vit'] as const).map(k => <div key={k} className="stat"><span>{k.toUpperCase().replace('DEF', 'DÉF')}</span><b>{t[k]}</b></div>)}</div>
-      <div className="abil">{abilities(s, lvl).map((a, i) => <div key={i}><b>{a.nom} <span className="cost">{a.puissance} énergie</span></b><small>{EFF[a.effet]}</small></div>)}</div>
+      <RpgPanel s={s} c={best} />
       {c.length > 0 && <div className="panel fusion"><p className="eyebrow">Fusion</p>
-        {Object.keys(byLvl).map(Number).sort((a, b) => a - b).map(l => <div key={l} className="row spread line"><span><b>Niveau {l}</b> · {byLvl[l].length} exemplaire{byLvl[l].length > 1 ? 's' : ''}{FRAME(l) ? ` · ${FRAMEN[FRAME(l)].toLowerCase()}` : ''}</span>
-          {l < MAXLVL && byLvl[l].length >= 2 ? <button className="btn" onClick={() => doFuse(l)}>Fusionner 2 → niv. {l + 1}</button> : <span className="note">{l >= MAXLVL ? 'niveau max' : 'il en faut 2'}</span>}</div>)}
-        <p className="note">Deux exemplaires du même niveau donnent un niveau de plus. La meilleure photo est gardée ; si les deux ont la même qualité, 25 % de chances qu'elle s'améliore (jamais « parfaite »).</p></div>}
+        {Object.keys(byLvl).map(Number).sort((a, b) => a - b).map(l => <div key={l} className="row spread line"><span><b>Rang {'★'.repeat(l)}</b> · {byLvl[l].length} exemplaire{byLvl[l].length > 1 ? 's' : ''}{FRAME(l) ? ` · ${FRAMEN[FRAME(l)].toLowerCase()}` : ''}</span>
+          {l < MAXLVL && byLvl[l].length >= 2 ? <button className="btn" onClick={() => doFuse(l)}>Fusionner 2 → {'★'.repeat(l + 1)}</button> : <span className="note">{l >= MAXLVL ? 'rang max' : 'il en faut 2'}</span>}</div>)}
+        <p className="note">Deux exemplaires du même rang donnent un rang de plus : le niveau maximum monte de 5 et l'expérience est gardée. La meilleure photo est gardée ; si les deux ont la même qualité, 25 % de chances qu'elle s'améliore (jamais « parfaite »).</p></div>}
       {c.length > 0 && <div className="qlist">{QUAL.map((q, i) => counts[i] ? <span key={q}>{q} ×{counts[i]}</span> : null)}</div>}
       {s.credit && <p className="credit">Photo : {s.credit} · <a href={s.src || '#'} target="_blank" rel="noopener">voir sur iNaturalist</a></p>}
       <div className="row">{c.length > 0 && <button className="btn primary" disabled={sharing} onClick={share}>{sharing ? 'Image…' : 'Partager'}</button>}{c.length > 0 && <button className="btn ghost" onClick={() => setSell(true)}>Vendre</button>}<button className="btn ghost" onClick={toggleWish}>{wished ? 'Ne plus suivre' : 'Suivre au marché'}</button><button className="btn" onClick={onClose}>Fermer</button></div>
@@ -66,7 +66,7 @@ function SellSheet({ id, onClose }: { id: string; onClose: () => void }) {
   return (
     <Sheet onClose={onClose} label={`Vendre ${s.nom}`}>
       <h2>Vendre : {s.nom}</h2>
-      <div className="filters">{opts.map((y, i) => <button key={y.id} aria-pressed={i === sel} onClick={() => { setSel(i); setStart(String(cote(s, y.lvl, y.q))) }}>Niv. {y.lvl} · {QUAL[qIndex(y.q)]}</button>)}</div>
+      <div className="filters">{opts.map((y, i) => <button key={y.id} aria-pressed={i === sel} onClick={() => { setSel(i); setStart(String(cote(s, y.lvl, y.q))) }}>{'★'.repeat(y.lvl)} · {QUAL[qIndex(y.q)]}</button>)}</div>
       <p className="note">Cote {ref} plumes</p>
       <div className="panel"><p className="eyebrow">Mettre aux enchères</p>
         <label className="field">Mise de départ<input type="number" min={1} value={start} onChange={e => setStart(e.target.value)} /></label>

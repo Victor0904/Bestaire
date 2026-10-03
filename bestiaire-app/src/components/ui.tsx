@@ -2,12 +2,13 @@ import { ReactNode, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { Species, TIERS, QUAL, qIndex, FRAME, photoStyle } from '../game/species';
 
-export function Print({ s, q, lvl, phase, isNew, foot, dev }: { s: Species; q: number; lvl: number; phase?: string | null; isNew?: boolean; foot?: ReactNode; dev?: boolean }) {
+export function Print({ s, q, lvl, phase, isNew, foot, dev, niv }: { s: Species; q: number; lvl: number; phase?: string | null; isNew?: boolean; foot?: ReactNode; dev?: boolean; niv?: number }) {
   const qi = qIndex(q), fr = FRAME(lvl), st = photoStyle(s);
   const ph = (phase || 'jour').normalize('NFD').replace(/[̀-ͯ]/g, '');
   return (
     <div className={`print t${s.tier} ${fr ? 'fr-' + fr : ''} ${dev ? 'dev' : ''}`}>
-      {lvl > 1 && <span className="lvlb">Niv. {lvl}</span>}
+      {lvl > 1 && <span className="lvlb" title={`Rang ${lvl}`}>{'★'.repeat(lvl)}</span>}
+      {niv !== undefined && <span className="nivb">Niv. {niv}</span>}
       {isNew && <span className="new">Nouveau</span>}
       <div className={`scene q${qi} ph-${ph}`}>
         {st ? <div className="spr" role="img" aria-label={s.nom} style={st} /> : <div className="nophoto"><span>{s.nom.split(/[\s'-]+/).filter(w => w.length > 2).map(w => w[0]).slice(0, 2).join('').toUpperCase()}</span></div>}

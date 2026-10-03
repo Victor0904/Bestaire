@@ -1,4 +1,5 @@
-import { Species, BYID } from './species';
+import { Species, BYID, Classe } from './species';
+import { NIV_CAPA3, NIV_INSTINCT, NIV_SPECIALE, RANG_CAPA3, RANG_SPECIALE } from './rpg';
 
 export const ARCH = {
   p: { n: 'Prédateur', hp: 1, att: 1.25, def: 0.9, vit: 1.05, ab: [['embuscade', 3], ['frappe', 2]], l3: ['intimidation', 1], l5: ['frappe', 3] },
@@ -33,24 +34,28 @@ export function baseStats(s: Species) {
   const g = s.g || DEFAULT_G[s.classe] || 50, lm = Math.log10(Math.max(g, 0.3)), A = ARCH[s.arch] || ARCH.o;
   return { pv: Math.round(clamp(28 + 15 * lm, 22, 120) * A.hp), att: Math.round(clamp(9 + 4 * lm, 6, 30) * A.att), def: Math.round(clamp(8 + 3 * lm, 5, 28) * A.def), vit: Math.round(clamp(14 - 1.2 * lm, 4, 20) * A.vit) };
 }
-export function statsAt(s: Species, lvl: number) { const b = baseStats(s), k = 1 + 0.1 * ((lvl || 1) - 1); return { pv: Math.round(b.pv * k), att: Math.round(b.att * k), def: Math.round(b.def * k), vit: Math.round(b.vit * k) }; }
+/** Stats d'une carte : rang (étoiles, fusion) et niveau (expérience) */
+export function statsAt(s: Species, lvl: number, niv = 1) { const b = baseStats(s), k = (1 + 0.1 * ((lvl || 1) - 1)) * (1 + 0.035 * ((niv || 1) - 1)); return { pv: Math.round(b.pv * k), att: Math.round(b.att * k), def: Math.round(b.def * k), vit: Math.round(b.vit * k) }; }
+/** Force d'une carte (pour comparer et équilibrer) */
+export const puissance = (s: Species, lvl: number, niv = 1) => { const t = statsAt(s, lvl, niv); return Math.round(t.pv * 0.6 + t.att * 2.2 + t.def * 1.6 + t.vit * 1.2) };
 export interface Ability { effet: Effet; puissance: number; nom: string }
-export function abilities(s: Species, lvl: number): Ability[] {
-  const A = ARCH[s.arch] || ARCH.o; const l: (readonly [string, number])[] = [...A.ab]; if (lvl >= 3) l.push(A.l3); if (lvl >= 5) l.push(A.l5);
+export function abilities(s: Species, lvl: number, niv = 1): Ability[] {
+  const A = ARCH[s.arch] || ARCH.o; const l: (readonly [string, number])[] = [...A.ab];
+  if (lvl >= RANG_CAPA3 || niv >= NIV_CAPA3) l.push(A.l3); if (lvl >= RANG_SPECIALE || niv >= NIV_SPECIALE) l.push(A.l5);
   return l.map(([e, p], i) => ({ effet: e as Effet, puissance: p, nom: (i === 3 ? 'Spéciale : ' : '') + abName(e as Effet, s) }));
 }
-const PREY: Record<string, string[]> = { M: ['O', 'P', 'A'], O: ['I', 'K', 'R', 'A', 'X'], R: ['A', 'M', 'I'], A: ['I', 'K', 'X'], P: ['A', 'I', 'P', 'X'], I: ['I'], K: ['I'], X: [] };
+export const PREY: Record<string, string[]> = { M: ['O', 'P', 'A'], O: ['I', 'K', 'R', 'A', 'X'], R: ['A', 'M', 'I'], A: ['I', 'K', 'X'], P: ['A', 'I', 'P', 'X'], I: ['I'], K: ['I'], X: [] };
 
-export interface Fighter { s: Species; lvl: number; side: 'P' | 'E'; maxHp: number; hp: number; att: number; def: number; vit: number; energy: number; poison: { turns: number; dmg: number } | null; shield: number; dodge: number; stun: boolean; attMod: number; vitMod: number }
+export interface Fighter { s: Species; lvl: number; niv: number; boss: boolean; inst: number; side: 'P' | 'E'; maxHp: number; hp: number; att: number; def: number; vit: number; energy: number; poison: { turns: number; dmg: number } | null; shield: number; dodge: number; stun: boolean; attMod: number; vitMod: number }
 export interface LogLine { m: string; t?: 'sys'; adv?: boolean }
 /** Événements d'un tour, rejoués un par un par l'écran de combat (animations). */
-export interface Ev { k: 'act' | 'hit' | 'dodge' | 'heal' | 'shield' | 'stun' | 'poison' | 'tick' | 'buff' | 'debuff' | 'ko' | 'switch' | 'skip' | 'fatigue'; side: 'P' | 'E'; amt?: number; adv?: boolean; nom?: string; eff?: Effet | 'base'; hp?: number; i?: number }
+export interface Ev { k: 'ult' | 'inst' | 'act' | 'hit' | 'dodge' | 'heal' | 'shield' | 'stun' | 'poison' | 'tick' | 'buff' | 'debuff' | 'ko' | 'switch' | 'skip' | 'fatigue'; side: 'P' | 'E'; amt?: number; adv?: boolean; nom?: string; eff?: Effet | 'base'; hp?: number; i?: number }
 export interface Battle { ev?: Ev[]; round: number; biome: string; ph: string; P: Fighter[]; E: Fighter[]; pi: number; ei: number; log: LogLine[]; over: boolean; won?: boolean; fx?: { P: number; E: number } | null; pvp?: string; defRating?: number }
 export type Rng = () => number;
 
-export function mkFighter(s: Species, lvl: number, side: 'P' | 'E'): Fighter {
-  const t = statsAt(s, lvl);
-  return { s, lvl, side, maxHp: t.pv, hp: t.pv, att: t.att, def: t.def, vit: t.vit, energy: 1, poison: null, shield: 0, dodge: 0, stun: false, attMod: 1, vitMod: 1 };
+export function mkFighter(s: Species, lvl: number, side: 'P' | 'E', niv = 1, boss = false, mult = 1): Fighter {
+  const t = statsAt(s, lvl, niv), m = (x: number) => Math.max(1, Math.round(x * mult)), hp = m(boss ? t.pv * 1.4 : t.pv);
+  return { s, lvl, niv, boss, inst: 0, side, maxHp: hp, hp, att: m(boss ? t.att * 1.1 : t.att), def: m(t.def), vit: t.vit, energy: 1, poison: null, shield: 0, dodge: 0, stun: false, attMod: 1, vitMod: 1 };
 }
 export const prey = (a: Fighter, d: Fighter) => (a.s.arch === 'p' || a.s.arch === 'o') && (PREY[a.s.classe] || []).includes(d.s.classe) && a.s.id !== d.s.id;
 export const active = (B: Battle, side: 'P' | 'E') => B[side][side === 'P' ? B.pi : B.ei];
@@ -62,24 +67,60 @@ function tb(B: Battle, f: Fighter) {
   else { if (!day && !night) { v *= 1.3; a *= 1.1 } else v *= 1.05 }
   return { a, d, v };
 }
+// ---------------------------------------------------------------------
+// Instinct : jauge qui se remplit en frappant et en encaissant. Pleine, elle libère le coup ultime de la classe.
+// ---------------------------------------------------------------------
+export type Choix = Ability | null | { sw: number } | { ult: true };
+export const INST_MAX = 100;
+export const ULTIMES: Record<Classe, { nom: string; desc: string }> = {
+  M: { nom: 'Fureur sauvage', desc: "Énorme coup qui traverse les protections et baisse l'attaque adverse" },
+  O: { nom: 'Piqué fulgurant', desc: 'Frappe toujours en premier, impossible à esquiver' },
+  R: { nom: 'Sang-froid', desc: 'Récupère 35 % de ses PV et se protège' },
+  A: { nom: 'Toxines', desc: 'Poison violent, peut étourdir' },
+  P: { nom: 'Tourbillon', desc: '4 coups rapides impossibles à esquiver' },
+  I: { nom: 'Essaim furieux', desc: '5 à 7 piqûres' },
+  K: { nom: 'Toile piège', desc: 'Étourdit à coup sûr et empoisonne' },
+  X: { nom: "Nuage d'encre", desc: 'Esquive la prochaine attaque et récupère 20 % de ses PV' },
+};
+export const aInstinct = (f: Fighter) => f.boss || f.niv >= NIV_INSTINCT || f.lvl >= RANG_CAPA3;
+export const ultPret = (f: Fighter) => aInstinct(f) && f.inst >= INST_MAX && f.hp > 0;
+function gagne(f: Fighter, n: number) { if (aInstinct(f)) f.inst = Math.min(INST_MAX, f.inst + n) }
+function ultime(B: Battle, f: Fighter, t: Fighter, L: LogLine[], rng: Rng) {
+  const u = ULTIMES[f.s.classe]; f.inst = 0;
+  L.push({ m: `${f.s.nom} libère son instinct : ${u.nom} !` }); ev(B, { k: 'ult', side: f.side, nom: u.nom });
+  switch (f.s.classe) {
+    case 'M': hit(B, f, t, 2.3, L, rng, { perce: true }); if (t.hp > 0) { t.attMod = Math.max(0.5, t.attMod * 0.85); ev(B, { k: 'debuff', side: t.side, nom: 'Attaque ↓' }) } break;
+    case 'O': hit(B, f, t, 2.1, L, rng, { sur: true }); break;
+    case 'R': { const h = Math.min(f.maxHp - f.hp, Math.round(f.maxHp * 0.35)); f.hp += h; ev(B, { k: 'heal', side: f.side, amt: h, hp: f.hp }); f.shield = Math.max(f.shield, 15 + f.niv); ev(B, { k: 'shield', side: f.side, amt: f.shield }); L.push({ m: `${f.s.nom} récupère ${h} PV et se protège.` }); break }
+    case 'A': hit(B, f, t, 0.8, L, rng); if (t.hp > 0) { t.poison = { turns: 3, dmg: 6 + Math.round(f.att * 0.45) }; ev(B, { k: 'poison', side: t.side }); if (rng() < 0.5) { t.stun = true; ev(B, { k: 'stun', side: t.side }) } } break;
+    case 'P': for (let i = 0; i < 4 && t.hp > 0; i++) hit(B, f, t, 0.62, L, rng, { sur: true }); break;
+    case 'I': { const n = 5 + Math.floor(rng() * 3); for (let i = 0; i < n && t.hp > 0; i++) hit(B, f, t, 0.38, L, rng); break }
+    case 'K': hit(B, f, t, 0.7, L, rng, { sur: true }); if (t.hp > 0) { t.stun = true; ev(B, { k: 'stun', side: t.side }); t.poison = { turns: 3, dmg: 4 + Math.round(f.att * 0.3) }; ev(B, { k: 'poison', side: t.side }) } break;
+    default: { f.dodge = 1; ev(B, { k: 'buff', side: f.side, nom: 'Esquive' }); const h = Math.min(f.maxHp - f.hp, Math.round(f.maxHp * 0.2)); f.hp += h; ev(B, { k: 'heal', side: f.side, amt: h, hp: f.hp }) }
+  }
+  f.inst = 0;
+}
 const ev = (B: Battle, e: Ev) => { (B.ev ||= []).push(e) };
 export const FATIGUE = 15, MAX_ROUNDS = 40;
 const spd = (B: Battle, f: Fighter) => f.vit * f.vitMod * tb(B, f).v;
-function hit(B: Battle, at: Fighter, df: Fighter, factor: number, L: LogLine[], rng: Rng) {
-  if (df.dodge && rng() < df.dodge) { df.dodge = 0; L.push({ m: `${df.s.nom} esquive !` }); ev(B, { k: 'dodge', side: df.side }); return }
+function hit(B: Battle, at: Fighter, df: Fighter, factor: number, L: LogLine[], rng: Rng, o: { perce?: boolean; sur?: boolean } = {}) {
+  if (!o.sur && df.dodge && rng() < df.dodge) { df.dodge = 0; L.push({ m: `${df.s.nom} esquive !` }); ev(B, { k: 'dodge', side: df.side }); return }
   df.dodge = 0; const A = tb(B, at), D = tb(B, df);
   let dmg = at.att * at.attMod * A.a * factor * (30 / (30 + df.def * D.d)) * (0.9 + rng() * 0.2);
   const adv = prey(at, df); if (adv) dmg *= 1.5;
   // Fatigue : après le tour 15, les coups font de plus en plus mal (évite les combats sans fin)
   if (B.round > FATIGUE) dmg *= 1 + 0.2 * (B.round - FATIGUE);
   dmg = Math.max(1, Math.round(dmg));
-  if (df.shield) { const ab = Math.min(df.shield, dmg); df.shield -= ab; dmg -= ab; if (ab) { L.push({ t: 'sys', m: `Protection : ${ab} absorbés` }); ev(B, { k: 'shield', side: df.side, amt: -ab }) } }
+  if (df.shield && !o.perce) { const ab = Math.min(df.shield, dmg); df.shield -= ab; dmg -= ab; if (ab) { L.push({ t: 'sys', m: `Protection : ${ab} absorbés` }); ev(B, { k: 'shield', side: df.side, amt: -ab }) } }
   df.hp = Math.max(0, df.hp - dmg);
+  gagne(at, 8 + (40 * dmg) / df.maxHp); gagne(df, (30 * dmg) / df.maxHp);
   ev(B, { k: 'hit', side: df.side, amt: dmg, adv, hp: df.hp });
   L.push({ m: `${at.s.nom} inflige ${dmg} dégâts${adv ? ' (chaîne alimentaire ×1,5)' : ''}.`, adv });
 }
-function doAct(B: Battle, f: Fighter, t: Fighter, a: Ability | null, first: boolean, L: LogLine[], rng: Rng) {
+function doAct(B: Battle, f: Fighter, t: Fighter, a: Choix, first: boolean, L: LogLine[], rng: Rng) {
   if (f.hp <= 0) return; if (f.stun) { f.stun = false; L.push({ m: `${f.s.nom} est étourdi et passe son tour.` }); ev(B, { k: 'skip', side: f.side }); return }
+  if (a && 'ult' in a) { if (ultPret(f)) return ultime(B, f, t, L, rng); a = null }
+  if (a && 'sw' in a) a = null;
   if (!a) { L.push({ m: `${f.s.nom} attaque.` }); ev(B, { k: 'act', side: f.side, nom: 'Attaque', eff: 'base' }); hit(B, f, t, 0.9, L, rng); return }
   f.energy -= a.puissance; const p = a.puissance; L.push({ m: `${f.s.nom} utilise ${a.nom}.` }); ev(B, { k: 'act', side: f.side, nom: a.nom, eff: a.effet });
   switch (a.effet) {
@@ -95,25 +136,30 @@ function doAct(B: Battle, f: Fighter, t: Fighter, a: Ability | null, first: bool
     case 'embuscade': hit(B, f, t, first ? 1.2 + 0.4 * p : 0.55, L, rng); if (!first) L.push({ t: 'sys', m: "Embuscade éventée : l'adversaire a agi en premier." }); break;
   }
 }
-export function ai(f: Fighter, rng: Rng): Ability | null {
-  const ab = abilities(f.s, f.lvl).filter(a => a.puissance <= f.energy);
+export function ai(f: Fighter, rng: Rng): Choix {
+  if (ultPret(f)) return { ult: true };
+  const ab = abilities(f.s, f.lvl, f.niv).filter(a => a.puissance <= f.energy);
   if (f.hp < f.maxHp * 0.35) { const d = ab.find(a => a.effet === 'soin' || a.effet === 'bouclier'); if (d) return d }
   if (ab.length && rng() < 0.75) { const off = ab.filter(a => ['frappe', 'nuee', 'poison', 'etourdir', 'embuscade'].includes(a.effet)); if (off.length) return off.sort((a, b) => b.puissance - a.puissance)[0]; return ab[Math.floor(rng() * ab.length)] }
   return null;
 }
-export function newBattle(team: { s: Species; lvl: number }[], foes: { s: Species; lvl: number }[], biome: string, ph: string): Battle {
-  return { round: 1, biome, ph, P: team.map(x => mkFighter(x.s, x.lvl, 'P')), E: foes.map(x => mkFighter(x.s, x.lvl, 'E')), pi: 0, ei: 0, log: [], over: false };
+/** mult : ajustement d'équilibrage des adversaires (1 = normal) */
+export interface Membre { s: Species; lvl: number; niv?: number; boss?: boolean; mult?: number }
+export function newBattle(team: Membre[], foes: Membre[], biome: string, ph: string): Battle {
+  return { round: 1, biome, ph, P: team.map(x => mkFighter(x.s, x.lvl, 'P', x.niv, x.boss, x.mult)), E: foes.map(x => mkFighter(x.s, x.lvl, 'E', x.niv, x.boss, x.mult)), pi: 0, ei: 0, log: [], over: false };
 }
 /** Joue un tour. choice : capacité, null (attaque de base) ou {sw:index} (changement). Modifie B. */
-export function playTurn(B: Battle, choice: Ability | null | { sw: number }, rng: Rng = Math.random) {
+export function playTurn(B: Battle, choice: Choix, rng: Rng = Math.random) {
   if (B.over) return; const L: LogLine[] = []; B.ev = []; const P = active(B, 'P'), E = active(B, 'E'), eA = ai(E, rng); const hp0 = { P: P.hp, E: E.hp };
   if (choice && 'sw' in choice) { B.pi = choice.sw; ev(B, { k: 'switch', side: 'P', i: choice.sw }); L.push({ m: `Tu envoies ${active(B, 'P').s.nom}.` }); doAct(B, E, active(B, 'P'), eA, true, L, rng) }
   else {
-    const pf = spd(B, P) > spd(B, E) || (spd(B, P) === spd(B, E) && rng() < 0.5);
-    const order: [Fighter, Fighter, Ability | null][] = pf ? [[P, E, choice], [E, P, eA]] : [[E, P, eA], [P, E, choice]];
+    const prio = (f: Fighter, c: Choix) => (c && 'ult' in c && f.s.classe === 'O' && ultPret(f) ? 1 : 0);
+    const pp = prio(P, choice), pe = prio(E, eA);
+    const pf = pp !== pe ? pp > pe : spd(B, P) > spd(B, E) || (spd(B, P) === spd(B, E) && rng() < 0.5);
+    const order: [Fighter, Fighter, Choix][] = pf ? [[P, E, choice], [E, P, eA]] : [[E, P, eA], [P, E, choice]];
     order.forEach(([f, t, a], i) => { if (f.hp > 0 && t.hp > 0) doAct(B, f, t, a, i === 0, L, rng) });
   }
-  for (const f of [...B.P, ...B.E]) { if (f.hp > 0 && f.poison) { f.hp = Math.max(0, f.hp - f.poison.dmg); ev(B, { k: 'tick', side: f.side, amt: f.poison.dmg, hp: f.hp, i: (f.side === 'P' ? B.P : B.E).indexOf(f) }); L.push({ t: 'sys', m: `Poison : ${f.s.nom} −${f.poison.dmg}` }); if (--f.poison.turns <= 0) f.poison = null } f.energy = Math.min(5, f.energy + 1) }
+  for (const f of [...B.P, ...B.E]) { if (f.hp > 0 && f.poison) { f.hp = Math.max(0, f.hp - f.poison.dmg); ev(B, { k: 'tick', side: f.side, amt: f.poison.dmg, hp: f.hp, i: (f.side === 'P' ? B.P : B.E).indexOf(f) }); L.push({ t: 'sys', m: `Poison : ${f.s.nom} −${f.poison.dmg}` }); if (--f.poison.turns <= 0) f.poison = null } f.energy = Math.min(5, f.energy + 1); if (f.hp > 0) gagne(f, 6) }
   B.fx = { P: Math.max(0, hp0.P - P.hp), E: Math.max(0, hp0.E - E.hp) }; B.round++;
   for (const sd of ['P', 'E'] as const) { const f = active(B, sd); if (f.hp <= 0) { L.push({ m: `${f.s.nom} est K.O.` }); ev(B, { k: 'ko', side: sd }); const nx = B[sd].findIndex(x => x.hp > 0); if (nx >= 0) { if (sd === 'P') B.pi = nx; else B.ei = nx; ev(B, { k: 'switch', side: sd, i: nx }); L.push({ m: `${sd === 'P' ? 'Tu envoies' : 'Le camp adverse envoie'} ${B[sd][nx].s.nom}.` }) } } }
   B.log.push(...L);
@@ -126,6 +172,6 @@ export function playTurn(B: Battle, choice: Ability | null | { sw: number }, rng
     B.over = true; B.won = pct(B.P) >= pct(B.E); B.log.push({ t: 'sys', m: `Temps écoulé : victoire aux points ${B.won ? 'pour toi' : "pour l'adversaire"}.` });
   }
 }
-export const wildFoes = (pool: Species[], n: number, avgLvl: number, exclude: string[], rng: Rng = Math.random) =>
-  [...pool].filter(s => !exclude.includes(s.id)).sort(() => rng() - 0.5).slice(0, n).map(s => ({ s, lvl: clamp(avgLvl + Math.floor(rng() * 3) - 1, 1, 7) }));
+export const wildFoes = (pool: Species[], n: number, avgLvl: number, exclude: string[], rng: Rng = Math.random, avgNiv = 1): Membre[] =>
+  [...pool].filter(s => !exclude.includes(s.id)).sort(() => rng() - 0.5).slice(0, n).map(s => ({ s, lvl: clamp(avgLvl + Math.floor(rng() * 3) - 1, 1, 7), niv: clamp(avgNiv + Math.floor(rng() * 3) - 1, 1, 40) }));
 export { BYID };
